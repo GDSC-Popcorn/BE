@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    import: optional:file:.env
+  database:
+    password: ${DB_PASSWORD}
+    url:
+      "jdbc:postgresql://localhost:5433/popcorn_db"
+    username: ${DB_USERNAME}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: create
+    show-sql: true
+    
