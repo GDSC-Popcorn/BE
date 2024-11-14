@@ -1,13 +1,15 @@
 package com.popcorn.popcorn.service;
 
-import com.popcorn.popcorn.domain.dto.SignupDto;
+import com.popcorn.popcorn.domain.Role;
+import com.popcorn.popcorn.domain.dto.FirstSignupDto;
+import com.popcorn.popcorn.domain.dto.SecondSignupDto;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.repository.UserRepository;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.lang.model.type.ErrorType;
 import java.util.Optional;
 
 
@@ -18,26 +20,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public Optional<UserEntity> login(String userName, String password){
-
-        Optional<UserEntity> user = userRepository.findByUserName(userName);
-        if(user.isPresent()){
-            if(bCryptPasswordEncoder.matches(password, user.get().getPassword())){
-                return user;
-            }
+    public void signup(FirstSignupDto firstSignupDto, SecondSignupDto secondSignupDto) {
+        boolean isUser = userRepository.existsByUsername(firstSignupDto.getUsername());
+        if(isUser){
+            throw new IllegalArgumentException("이미 존재하는 사용자");
         }
 
-        return Optional.empty();
-    }
-
-    public void signup(SignupDto signupDto) {
-        boolean isUser = userRepository.existsByUserName(signupDto.getUserName());
-        if(isUser) return;
-
         UserEntity user = UserEntity.builder()
-                .userName(signupDto.getUserName())
-                .password(bCryptPasswordEncoder.encode(signupDto.getPassword()))
-                .nickname(signupDto.getNickname())
+                .username(firstSignupDto.getUsername())
+                .password(bCryptPasswordEncoder.encode(firstSignupDto.getPassword()))
+                .nickname(secondSignupDto.getNickname())
+                .email(firstSignupDto.getEmail())
+                .name(firstSignupDto.getName())
+                .role(Role.USER)
                 .build();
         userRepository.save(user);
 
