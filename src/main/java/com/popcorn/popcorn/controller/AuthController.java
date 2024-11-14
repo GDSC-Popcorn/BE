@@ -1,6 +1,9 @@
 package com.popcorn.popcorn.controller;
 
-import com.popcorn.popcorn.domain.dto.SignupDto;
+import com.popcorn.popcorn.domain.dto.FirstSignupDto;
+import com.popcorn.popcorn.domain.dto.LoginRequestDto;
+import com.popcorn.popcorn.domain.dto.SecondSignupDto;
+import com.popcorn.popcorn.domain.dto.SignupRequestDto;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,24 +21,12 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignupDto signupDto){
-        userService.signup(signupDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("signup successful");
-    }
-
-
-    @PostMapping("/login")
-    public ResponseEntity<String> login(
-            @RequestParam String userName,
-            @RequestParam String password
-    ){
-        Optional<UserEntity> user = userService.login(userName, password);
-
-        if(user.isPresent()){
-            return ResponseEntity.ok("Login successful");
-        }
-        else{
-            return ResponseEntity.status(401).body("Login failed");
+    public ResponseEntity<String> signup(@RequestBody SignupRequestDto signupRequestDto){
+        try{
+            userService.signup(signupRequestDto.getFirstSignupDto(), signupRequestDto.getSecondSignupDto());
+            return ResponseEntity.status(HttpStatus.CREATED).body("signup successful");
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 존재하는 사용자");
         }
     }
 
