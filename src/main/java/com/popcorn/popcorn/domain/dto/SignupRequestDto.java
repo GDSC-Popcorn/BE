@@ -3,17 +3,13 @@ package com.popcorn.popcorn.domain.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignupDto {
+@Getter
+public class SignupRequestDto {
 
-    private String userName;
+    private FirstSignupDto firstSignupDto;
 
-    private String password;
-
-    private String nickname;
+    private SecondSignupDto secondSignupDto;
 }
