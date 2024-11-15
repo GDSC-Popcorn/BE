@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,8 +15,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -58,19 +63,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        long accessTokenExpiry = 600000L * 6; // 60분
-        long refreshTokenExpiry = 600000L * 6 * 24 * 7; // 7일
+        String access = jwtUtil.createJwt("access", username, role, 1); //60분
+        String refresh = jwtUtil.createJwt("refresh", username, role, 24*7); //7일
 
-        String access = jwtUtil.createJwt("access", username, role, accessTokenExpiry); //60분
-        String refresh = jwtUtil.createJwt("refresh", username, role, refreshTokenExpiry); //7일
+        addRefreshEntity(username, refresh, 24*7);
 
-        addRefreshEntity(username, refresh, 600000L*6*24*7);
+        // 만료 시간 계산
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime accessExpiration = now.plusHours(1);
+        ZonedDateTime refreshExpiration = now.plusHours(24*7);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         Map<String, String> tokens = new HashMap<>();
         tokens.put("access_token", access);
-        tokens.put("access_expired_at", String.valueOf(System.currentTimeMillis() + accessTokenExpiry));
+        tokens.put("access_expired_at", accessExpiration.format(formatter));
         tokens.put("refresh_token", refresh);
-        tokens.put("refresh_expired_at", String.valueOf(System.currentTimeMillis() + refreshTokenExpiry));
+        tokens.put("refresh_expired_at", refreshExpiration.format(formatter));
 
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -82,13 +91,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     }
 
-    private void addRefreshEntity(String username, String refresh, long expiredMs){
-        Date date = new Date(System.currentTimeMillis() + expiredMs);
+    private void addRefreshEntity(String username, String refresh, long plusHour){
+        LocalDateTime expirationDate = LocalDateTime.now().plusHours(plusHour);
 
-        RefreshEntity refreshEntity = new RefreshEntity();
-        refreshEntity.setUsername(username);
-        refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
+        RefreshEntity refreshEntity = RefreshEntity.builder()
+                .username(username)
+                .refresh(refresh)
+                .expiration(expirationDate)
+                .build();
+
         refreshRepository.save(refreshEntity);
     }
 
