@@ -9,6 +9,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Component
@@ -25,7 +28,7 @@ public class JwtUtil {
     }
 
     public String getRole(String token){
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", Spring.class).toString();
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
     public String getCategory(String token){
@@ -36,13 +39,18 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createJwt(String category, String username, String role, Long expiredMs){
+    public String createJwt(String category, String username, String role, long expirationHour){
+        ZonedDateTime issuedT = ZonedDateTime.now();
+        ZonedDateTime expirateT = issuedT.plusHours(expirationHour);
+        var issuedAtDate = Date.from(issuedT.toInstant());
+        var expirationDate = Date.from(expirateT.toInstant());
+
         return Jwts.builder()
                 .claim("category", category)
                 .claim("username", username)
                 .claim("role", role)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .issuedAt(issuedAtDate)
+                .expiration(expirationDate)
                 .signWith(secretKey)
                 .compact();
     }
