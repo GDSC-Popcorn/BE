@@ -9,4 +9,8 @@ spring:
     show-sql: true
 
   jwt:
+    access:
+      plus-hour: 1   # 1시간
+    refresh:
+      plus-hour: 168   # 24*7 7일
     secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
