@@ -1,11 +1,13 @@
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/preproject
+    url: jdbc:mysql://3.36.146.53:3306/preproject
     username: root
-    password: root1234!
+    password: Vkqzhs0915!
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
+    dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
 
   jwt:
