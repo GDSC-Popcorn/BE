@@ -1,0 +1,19 @@
+package com.popcorn.popcorn.domain.dto;
+
+import com.popcorn.popcorn.domain.InterestType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+public class SecondSignupDto {
+
+    private String nickname;
+
+    private List<InterestType> interests;
+
+}
