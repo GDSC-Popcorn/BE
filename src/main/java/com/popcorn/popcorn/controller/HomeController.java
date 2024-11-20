@@ -18,7 +18,7 @@ public class HomeController {
     private final PopupService popupService;
 
 
-    @GetMapping
+    @GetMapping("/popups")
     public List<HomeDto> getAllPopups(){
         return PopupService.getAllPopups()
                 .stream()
