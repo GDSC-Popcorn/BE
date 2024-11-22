@@ -33,6 +33,7 @@ public class UserEntity {
 
     private String nickname;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Enumerated(EnumType.STRING)
