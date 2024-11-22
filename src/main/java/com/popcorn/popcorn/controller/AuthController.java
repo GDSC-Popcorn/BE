@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -19,6 +20,11 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserService userService;
+
+    @GetMapping("/hello")
+    public ResponseEntity<Map<String, String>> hello(){
+        return ResponseEntity.ok().body(Map.of("status","hello_world"));
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignupRequestDto signupRequestDto){
