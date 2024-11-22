@@ -26,7 +26,8 @@ public class UserService {
 
     public void signup(FirstSignupDto firstSignupDto, SecondSignupDto secondSignupDto) {
         boolean isUser = userRepository.existsByUsername(firstSignupDto.getUsername());
-        if(isUser){
+        boolean isEmail = userRepository.existsByEmail(firstSignupDto.getEmail());
+        if(isUser || isEmail){
             throw new IllegalArgumentException("이미 존재하는 사용자");
         }
 
