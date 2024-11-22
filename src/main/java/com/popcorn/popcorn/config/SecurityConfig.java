@@ -58,9 +58,8 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/auth/signup").permitAll()
+                        .requestMatchers("/login", "/", "/auth/signup","/mailsend", "/mailauthChk", "/reissue").permitAll()
                         .requestMatchers("/admin").hasRole(String.valueOf(Role.ADMIN))
-                        .requestMatchers("/reissue").permitAll()
                         .anyRequest().authenticated());
                                  //따로 필터를 적용하는거랑 다른 결과를 띈다.
         http
