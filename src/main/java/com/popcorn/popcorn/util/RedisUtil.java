@@ -24,9 +24,13 @@ public class RedisUtil {
     }
 
     public void setDataExpire(String key, String value, long duration){
-        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(duration);
-        valueOperations.set(key,value,expireDuration);
+        try {
+            ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+            Duration expireDuration = Duration.ofSeconds(duration);
+            valueOperations.set(key, value, expireDuration);
+        } catch (Exception e) {
+            throw new IllegalStateException("redis 관련 오류");
+        }
     }
 
     public void deleteData(String key){

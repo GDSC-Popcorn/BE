@@ -52,11 +52,14 @@ public class MailService {
             helper.setTo(toEmail);
             helper.setSubject(title);
             helper.setText(content, true);
+            redisUtil.setDataExpire(Integer.toString(authNumber), toEmail, 60*3L);
             mailSender.send(message);
         } catch (MessagingException e){
             e.printStackTrace();
+        } catch (IllegalStateException e){
+            e.printStackTrace();
+            throw new IllegalStateException("이메일 발송 중단.(redis관련 문제)");
         }
-        redisUtil.setDataExpire(Integer.toString(authNumber), toEmail, 60*3L);
     }
 
     public Boolean chkAuthNum(String email, String authNum) {
