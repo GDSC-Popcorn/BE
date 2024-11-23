@@ -28,11 +28,13 @@ public class MailController {
         } catch (MailException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("메일 발송에 실패함. 다시 시도해주세요.");
+        } catch(IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("잘못된 요청, Redis나 db가 가동되지않습니다.");
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("잘못된 요청, 입력값을 확인해주세요.");
         }
-
     }
 
 
