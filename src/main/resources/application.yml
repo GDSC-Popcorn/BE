@@ -35,3 +35,4 @@ spring:
     redis:
       host: 3.36.146.53
       port: 6379
+      password: Popcorn1107
