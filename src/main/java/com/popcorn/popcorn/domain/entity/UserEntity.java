@@ -48,6 +48,9 @@ public class UserEntity {
         }
         this.interests.add(userInterest);
     }
+    
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<LikeEntity> likes;
 
     /*
     /*
