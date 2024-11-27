@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface PopupRepository extends JpaRepository <PopupEntity, Long>{
     //종료일 오름차순으로 팝업 목록 정렬
-    List<PopupEntity> findAllByOrderByEnded_atAsc();
+    List<PopupEntity> findAllByOrderByEndedAtAsc();
     //팝업 ID로 팝업 조회
     PopupEntity findByPopupId(Long popupId);
 }
