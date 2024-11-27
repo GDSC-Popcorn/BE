@@ -34,7 +34,7 @@ public class PopupService {
 
     //홈 화면애 나타낼 팝업 목록 가져오기 메서드
     public List<HomeDto> getAllPopups() {
-        List<PopupEntity> popups = popupRepository.findAllByOrderByEnded_atAsc();
+        List<PopupEntity> popups = popupRepository.findAllByOrderByEndedAtAsc();
 
         return popups.stream()
                 .map(this::convertToHomeDTO)
