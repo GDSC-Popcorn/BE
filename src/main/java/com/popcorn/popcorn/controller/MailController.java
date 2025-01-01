@@ -1,5 +1,6 @@
 package com.popcorn.popcorn.controller;
 
+import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.domain.dto.EmailCheckDto;
 import com.popcorn.popcorn.domain.dto.EmailRequestDto;
 import com.popcorn.popcorn.service.MailService;
@@ -39,13 +40,13 @@ public class MailController {
 
 
     @PostMapping("/mailauthChk")
-    public ResponseEntity<Map<String, String>> mailChk(@RequestBody @Valid EmailCheckDto emailCheckDto){
+    public ResponseEntity<ApiResponse<String>> mailChk(@RequestBody @Valid EmailCheckDto emailCheckDto){
         Boolean chk = mailService.chkAuthNum(emailCheckDto.getEmail(), emailCheckDto.getAuthNum());
         if(chk){
-            return ResponseEntity.ok().body(Map.of("status", "success", "message", "인증 성공"));
+            return ResponseEntity.ok().body(ApiResponse.ok("인증 번호 일치"));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("status", "error", "message", "인증 번호가 틀리거나 만료되었습니다."));
+                .body(ApiResponse.fail(400,"fail","인증 번호가 틀리거나 만료되었습니다."));
     }
 
 
