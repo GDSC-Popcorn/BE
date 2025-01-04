@@ -1,6 +1,7 @@
 package com.popcorn.popcorn.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.domain.entity.RefreshEntity;
 import com.popcorn.popcorn.repository.RefreshRepository;
 import jakarta.servlet.FilterChain;
@@ -81,9 +82,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         tokens.put("refresh_token", refresh);
         tokens.put("refresh_expired_at", refreshExpiration.format(formatter));
 
+        ApiResponse<Map<String, String>> apiResponse = ApiResponse.ok(tokens);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(tokens);
+        String json = objectMapper.writeValueAsString(apiResponse);
 
         response.setContentType("application/json");
         response.setStatus(HttpStatus.OK.value());
@@ -105,6 +107,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        response.setStatus(401);
+        ApiResponse<String> apiResponse = ApiResponse.fail(
+                HttpStatus.UNAUTHORIZED.value(),
+                "fail",
+                "Invalid username or password"
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(apiResponse);
+        response.setContentType("application/json");
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write(json);
+
     }
 }
