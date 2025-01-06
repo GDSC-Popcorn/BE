@@ -1,5 +1,6 @@
 package com.popcorn.popcorn.domain.entity;
 
+import com.popcorn.popcorn.domain.InterestType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(name = "popup")
 @NoArgsConstructor
 @AllArgsConstructor
 public class PopupEntity {
@@ -27,7 +27,6 @@ public class PopupEntity {
     private String location;
     private String organizerUrl;
     private String reservationUrl;
-    private Integer categoryId;
     private String popupImage;
     private Boolean confirm;
 
@@ -41,4 +40,9 @@ public class PopupEntity {
 
     @OneToMany(mappedBy = "popup",cascade = CascadeType.ALL)
     private List<LikeEntity> likes;
+
+    @ElementCollection(targetClass = InterestType.class)
+    @Enumerated(EnumType.STRING)
+    private List<InterestType> categories;
+
 }

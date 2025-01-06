@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@Table(name = "likes")
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeEntity {
