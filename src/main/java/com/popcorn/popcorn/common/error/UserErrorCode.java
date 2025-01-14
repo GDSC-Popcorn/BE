@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum UserErrorCode implements ErrorCodeIfs{
 
     NOT_FOUND_USER("fail", 100,"not found user"),
-    USER_ALREADY_EXIST_ID("fail",101,"이미 존재하는 ID"),
+    USER_ALREADY_EXIST_ID("fail",400,"이미 존재하는 ID"),
     USER_ALREADY_EXIST_EMAIL("fail",102,"이미 존재하는 이메일");
 
 

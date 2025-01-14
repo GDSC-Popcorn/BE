@@ -53,6 +53,10 @@ public class UserService {
 
     }
 
+    public boolean isExistUsername(String username){
+        return userRepository.existsByUsername(username);
+    }
+
     public String findUserName(String name, String email) {
 
         UserEntity user = userRepository.findByNameAndEmail(name, email);
@@ -60,6 +64,14 @@ public class UserService {
             return "";
         }
         return user.getUsername();
+    }
+
+    public ApiResponse<String> isExistByEmail(String email){
+        UserEntity user = userRepository.findByEmail(email);
+        if(user == null){
+            return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
+        }
+        return ApiResponse.ok("이메일을 가진 유저가 존재");
     }
 
     public ApiResponse<String> setPassword(String email, String newPassword) {
