@@ -1,5 +1,7 @@
 package com.popcorn.popcorn.service;
 
+import com.popcorn.popcorn.common.api.ApiResponse;
+import com.popcorn.popcorn.common.error.UserErrorCode;
 import com.popcorn.popcorn.domain.InterestType;
 import com.popcorn.popcorn.domain.Role;
 import com.popcorn.popcorn.domain.dto.FirstSignupDto;
@@ -11,9 +13,6 @@ import com.popcorn.popcorn.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.lang.model.type.ErrorType;
-import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -52,5 +51,24 @@ public class UserService {
             userInterestRepository.save(userInterest);
         }
 
+    }
+
+    public String findUserName(String name, String email) {
+
+        UserEntity user = userRepository.findByNameAndEmail(name, email);
+        if(user == null){
+            return "";
+        }
+        return user.getUsername();
+    }
+
+    public ApiResponse<String> setPassword(String email, String newPassword) {
+        UserEntity user = userRepository.findByEmail(email);
+        if(user == null){
+           return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
+        }
+        user.setPassword(bCryptPasswordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return ApiResponse.ok("비밀번호 변경 완료");
     }
 }
