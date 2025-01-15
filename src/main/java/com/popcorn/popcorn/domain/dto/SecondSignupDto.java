@@ -14,6 +14,8 @@ import java.util.List;
 @Getter
 public class SecondSignupDto {
 
+    private Long profileId;
+
     @NotEmpty(message = "nickname is required")
     private String nickname;
 

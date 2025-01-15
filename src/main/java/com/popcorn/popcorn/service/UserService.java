@@ -1,5 +1,7 @@
 package com.popcorn.popcorn.service;
 
+import com.popcorn.popcorn.common.api.ApiResponse;
+import com.popcorn.popcorn.common.error.UserErrorCode;
 import com.popcorn.popcorn.domain.InterestType;
 import com.popcorn.popcorn.domain.Role;
 import com.popcorn.popcorn.domain.dto.FirstSignupDto;
@@ -11,9 +13,6 @@ import com.popcorn.popcorn.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.lang.model.type.ErrorType;
-import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -41,6 +40,7 @@ public class UserService {
                 .email(firstSignupDto.getEmail())
                 .name(firstSignupDto.getName())
                 .role(Role.USER)
+                .profileId(secondSignupDto.getProfileId())
                 .build();
 
         userRepository.save(user);
@@ -52,5 +52,36 @@ public class UserService {
             userInterestRepository.save(userInterest);
         }
 
+    }
+
+    public boolean isExistUsername(String username){
+        return userRepository.existsByUsername(username);
+    }
+
+    public String findUserName(String name, String email) {
+
+        UserEntity user = userRepository.findByNameAndEmail(name, email);
+        if(user == null){
+            return "";
+        }
+        return user.getUsername();
+    }
+
+    public ApiResponse<String> isExistByEmail(String email){
+        UserEntity user = userRepository.findByEmail(email);
+        if(user == null){
+            return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
+        }
+        return ApiResponse.ok("이메일을 가진 유저가 존재");
+    }
+
+    public ApiResponse<String> setPassword(String email, String newPassword) {
+        UserEntity user = userRepository.findByEmail(email);
+        if(user == null){
+           return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
+        }
+        user.setPassword(bCryptPasswordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return ApiResponse.ok("비밀번호 변경 완료");
     }
 }
