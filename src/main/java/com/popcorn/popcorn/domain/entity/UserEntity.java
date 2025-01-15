@@ -43,6 +43,11 @@ public class UserEntity {
     @OneToMany(mappedBy = "userEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserInterest> interests = new HashSet<>();
 
+
+
+    private Long profileId;
+
+
     //양방향 관계 매핑이라서 해줘야됨
     public void addUserInterest(UserInterest userInterest){
         if (this.interests == null) {

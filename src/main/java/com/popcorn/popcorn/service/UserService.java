@@ -40,6 +40,7 @@ public class UserService {
                 .email(firstSignupDto.getEmail())
                 .name(firstSignupDto.getName())
                 .role(Role.USER)
+                .profileId(secondSignupDto.getProfileId())
                 .build();
 
         userRepository.save(user);
