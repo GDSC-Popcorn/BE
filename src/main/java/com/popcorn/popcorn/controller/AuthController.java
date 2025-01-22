@@ -52,8 +52,8 @@ public class AuthController {
     }
 
     @GetMapping("/chkUser")
-    public ResponseEntity<ApiResponse<String>> chkUser(@RequestBody @Valid UsernameDto usernameDto){
-        boolean isExist = userService.isExistUsername(usernameDto.getUsername());
+    public ResponseEntity<ApiResponse<String>> chkUser(@RequestParam("username")String username){
+        boolean isExist = userService.isExistUsername(username);
         if(!isExist){
             return ResponseEntity.ok(ApiResponse.ok("사용 가능한 ID"));
         } else{
@@ -65,15 +65,17 @@ public class AuthController {
 
 
     @GetMapping("/validEmail")
-    public ResponseEntity<ApiResponse<String>> isExistByEmail(@RequestBody @Valid EmailRequestDto emailRequestDto){
+    public ResponseEntity<ApiResponse<String>> isExistByEmail(@RequestParam("email")String email){
         return ResponseEntity.status(HttpStatus.OK)
-                .body(userService.isExistByEmail(emailRequestDto.getEmail()));
+                .body(userService.isExistByEmail(email));
     }
 
     @GetMapping("/finduser")
-    public ResponseEntity<ApiResponse<String>> finduser(@RequestBody @Valid FindNameDto findNameDto){
-        String name = userService.findUserName(findNameDto.getName(), findNameDto.getEmail());
-        if(Objects.equals(name, "")){
+    public ResponseEntity<ApiResponse<String>> finduser(
+            @RequestParam("name")String name,
+            @RequestParam("email")String email){
+        String un = userService.findUserName(name, email);
+        if(Objects.equals(un, "")){
             return ResponseEntity.ok(ApiResponse.fail(NOT_FOUND_USER));
         }
         return ResponseEntity.ok(ApiResponse.ok(name));
