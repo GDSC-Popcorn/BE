@@ -2,34 +2,43 @@ package com.popcorn.popcorn.service;
 
 import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.common.error.UserErrorCode;
+import com.popcorn.popcorn.common.exception.UserNotFoundException;
 import com.popcorn.popcorn.domain.InterestType;
 import com.popcorn.popcorn.domain.Role;
-import com.popcorn.popcorn.domain.dto.FirstSignupDto;
-import com.popcorn.popcorn.domain.dto.SecondSignupDto;
+import com.popcorn.popcorn.domain.dto.*;
+import com.popcorn.popcorn.domain.entity.OauthInfo;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.domain.entity.UserInterest;
+import com.popcorn.popcorn.jwt.JwtUtil;
+import com.popcorn.popcorn.oauth.kakao.helper.KakaoOauthHelper;
 import com.popcorn.popcorn.repository.UserInterestRepository;
 import com.popcorn.popcorn.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
 
+    private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserInterestRepository userInterestRepository;
+    private final RefreshService refreshService;
+    private final KakaoOauthHelper kakaoOauthHelper;
 
     public void signup(FirstSignupDto firstSignupDto, SecondSignupDto secondSignupDto) {
         boolean isUser = userRepository.existsByUsername(firstSignupDto.getUsername());
         boolean isEmail = userRepository.existsByEmail(firstSignupDto.getEmail());
-        if(isUser){
+        if (isUser) {
             throw new IllegalArgumentException("이미 존재하는 ID");
         }
-        if(isEmail) {
+        if (isEmail) {
             throw new IllegalArgumentException("이미 존재하는 이메일");
         }
 
@@ -45,7 +54,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        for(InterestType interest : secondSignupDto.getInterests()){
+        for (InterestType interest : secondSignupDto.getInterests()) {
             UserInterest userInterest = new UserInterest();
             userInterest.setUserAndInterest(user, interest);
             user.addUserInterest(userInterest);
@@ -54,22 +63,73 @@ public class UserService {
 
     }
 
-    public boolean isExistUsername(String username){
+
+    /*
+    oauth로그인 결과 반환
+    * */
+    public OauthLoginResponse loginUser(OauthInfo oauthInfo) {
+        Optional<UserEntity> userOptional = userRepository.findByOauthInfo(oauthInfo);
+
+        if (userOptional.isPresent()) {
+            UserEntity user = userOptional.get();
+            return generateLoginResponse(user, false);
+        } else {
+            //일단 user만들어 놓기
+            UserEntity user = UserEntity.builder()
+                    .role(Role.USER)
+                    .oauthInfo(oauthInfo)
+                    .username("user" + UUID.randomUUID())
+                    .build();
+            userRepository.save(user);
+            return OauthLoginResponse.builder()
+                    .isNewUser(true)
+                    .build();
+        }
+
+    }
+
+    private OauthLoginResponse generateLoginResponse(UserEntity user, boolean isNewUser) {
+        String access = jwtUtil.createJwt("access", user.getUsername(), user.getRole().toString(), 1);
+        String refresh = jwtUtil.createJwt("refresh", user.getUsername(), user.getRole().toString(), 24 * 7);
+
+        String accessExpiry = jwtUtil.getExpiryFormatted(access);
+        String refreshExpiry = jwtUtil.getExpiryFormatted(refresh);
+
+        refreshService.addRefreshEntity(user.getUsername(), refresh, 24 * 7);
+
+        return OauthLoginResponse.builder()
+                .isNewUser(isNewUser)
+                .access(access)
+                .accessExpiredAt(accessExpiry)
+                .refresh(refresh)
+                .refreshExpiredAt(refreshExpiry)
+                .build();
+
+    }
+
+
+    public UserEntity queryUserByOauthInfo(OauthInfo oauthInfo) {
+        return userRepository
+                .findByOauthInfo(oauthInfo)
+                .orElseThrow(() -> UserNotFoundException.EXCEPTION);
+    }
+
+    public boolean isExistUsername(String username) {
         return userRepository.existsByUsername(username);
     }
 
     public String findUserName(String name, String email) {
 
         UserEntity user = userRepository.findByNameAndEmail(name, email);
-        if(user == null){
+        if (user == null) {
             return "";
         }
         return user.getUsername();
     }
 
-    public ApiResponse<String> isExistByEmail(String email){
+    public ApiResponse<String> isExistByEmail(String email) {
         UserEntity user = userRepository.findByEmail(email);
-        if(user == null){
+        if (user == null) {
             return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
         }
         return ApiResponse.ok("이메일을 가진 유저가 존재");
@@ -77,11 +137,33 @@ public class UserService {
 
     public ApiResponse<String> setPassword(String email, String newPassword) {
         UserEntity user = userRepository.findByEmail(email);
-        if(user == null){
-           return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
+        if (user == null) {
+            return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
         }
         user.setPassword(bCryptPasswordEncoder.encode(newPassword));
         userRepository.save(user);
         return ApiResponse.ok("비밀번호 변경 완료");
+    }
+
+    public OauthLoginResponse signupKakaoWhenFirstOauthLogin(AfterOauthSignupDto afterOauthSignupDto) {
+        String idToken = afterOauthSignupDto.getIdToken();
+        OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByKakaoIdToken(idToken);
+        Optional<UserEntity> user = userRepository.findByOauthInfo(oauthInfo);
+        if(user.isPresent()) {
+            user.get().updateUserInfo(afterOauthSignupDto.getSecondSignupDto().getNickname(), afterOauthSignupDto.getSecondSignupDto().getProfileId());
+
+
+            for (InterestType interest : afterOauthSignupDto.getSecondSignupDto().getInterests()) {
+                UserInterest userInterest = new UserInterest();
+                userInterest.setUserAndInterest(user.get(), interest);
+                user.get().addUserInterest(userInterest);
+                userInterestRepository.save(userInterest);
+            }
+            return generateLoginResponse(user.get(), false);
+        } else {
+            throw new UserNotFoundException().EXCEPTION;
+        }
+
+
     }
 }
