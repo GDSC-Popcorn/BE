@@ -12,8 +12,10 @@ public enum ErrorCode implements ErrorCodeIfs{
     BAD_REQUEST("fail", 400, "잘못된 요청"),
     SERVER_ERROR("fail",500,"서버에러"),
     NULL_POINT("fail", 512, "NUll Point"),
-    NOT_ACCESS("fail", 403, "엑세스 할 수 없음");
+    NOT_ACCESS("fail", 403, "엑세스 할 수 없음"),
 
+    TOKEN_EXPIRED("fail", 401, "만료된 토큰"),
+    INVALID_TOKEN("fail", 401,"잘못된 토큰, 재 로그인해주세요");
 
     private final String status;
     private final Integer resultCode;
