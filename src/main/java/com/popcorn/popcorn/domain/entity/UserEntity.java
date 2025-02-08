@@ -25,11 +25,13 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //로그인할때 치는 ID를 나타냄
     @Column(nullable = false, unique = true)
     private String username;
 
     private String password;
 
+    //사람 이름
     private String name;
 
     private String nickname;
@@ -44,9 +46,12 @@ public class UserEntity {
     private Set<UserInterest> interests = new HashSet<>();
 
 
-
+    //프로필 사진 0~4번 기본이미지 나타내는 변수
     private Long profileId;
 
+
+    @Embedded
+    private OauthInfo oauthInfo;
 
     //양방향 관계 매핑이라서 해줘야됨
     public void addUserInterest(UserInterest userInterest){
@@ -61,6 +66,12 @@ public class UserEntity {
         사진은 나중에.
      */
 
+
+
+    public void updateUserInfo(String nickname, Long profileId){
+        this.nickname = nickname;
+        this.profileId = profileId;
+    }
 
 
 }
