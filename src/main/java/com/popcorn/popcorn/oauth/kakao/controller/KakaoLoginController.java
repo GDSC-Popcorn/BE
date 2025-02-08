@@ -1,6 +1,5 @@
 package com.popcorn.popcorn.oauth.kakao.controller;
 
-import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.domain.dto.AfterOauthSignupDto;
 import com.popcorn.popcorn.domain.dto.OauthLoginResponse;
 import com.popcorn.popcorn.domain.entity.OauthInfo;
