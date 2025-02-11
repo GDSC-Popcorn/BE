@@ -130,9 +130,9 @@ public class UserService {
     public ApiResponse<String> isExistByEmail(String email) {
         UserEntity user = userRepository.findByEmail(email);
         if (user == null) {
-            return ApiResponse.fail(UserErrorCode.NOT_FOUND_USER);
+            return ApiResponse.ok("이메일 사용 가능");
         }
-        return ApiResponse.ok("이메일을 가진 유저가 존재");
+        return ApiResponse.fail(200, "fail", "이메일을 가진 유저가 존재");
     }
 
     public ApiResponse<String> setPassword(String email, String newPassword) {
