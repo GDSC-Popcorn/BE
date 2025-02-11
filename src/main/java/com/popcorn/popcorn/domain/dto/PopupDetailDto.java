@@ -23,10 +23,10 @@ public class PopupDetailDto {
     private Boolean isLiked;
 
     @Builder
-    public PopupDetailDto(Long popupId, String title, Date startedAt, Date endedAt,
+    public PopupDetailDto(Long id, String title, Date startedAt, Date endedAt,
                           String hours, String contents, String location,
                           String organizerUrl, String reservationUrl, List<String> popupImage, Boolean isLiked) {
-        this.popupId = popupId;
+        this.popupId = id;
         this.title = title;
         this.startedAt = startedAt;
         this.endedAt = endedAt;

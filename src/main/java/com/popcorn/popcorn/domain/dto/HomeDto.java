@@ -9,8 +9,8 @@ public class HomeDto {
     private String popupImage;
     private int dDay;
 
-    public HomeDto(Long popupId, String title, String popupImage, int dDay) {
-        this.popupId = popupId;
+    public HomeDto(Long id, String title, String popupImage, int dDay) {
+        this.popupId = id;
         this.title = title;
         this.popupImage = popupImage;
         this.dDay = dDay;

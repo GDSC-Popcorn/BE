@@ -52,6 +52,10 @@ public class UserEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<LikeEntity> likes;
 
+    public Long getUserId(){
+        return id;
+    }
+
     /*
     /*
         사진은 나중에.

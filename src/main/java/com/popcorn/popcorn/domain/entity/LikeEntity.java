@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@Table(name = "likes")
 @NoArgsConstructor
 @AllArgsConstructor
 public class LikeEntity {
@@ -16,11 +15,11 @@ public class LikeEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false) //외래 키
+    @JoinColumn(name = "user_id", nullable = false) //외래 키
     private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "popupId",nullable = false)
+    @JoinColumn(name = "popup_id",nullable = false)
     private PopupEntity popup;
 
     public LikeEntity(UserEntity user, PopupEntity popup) {
