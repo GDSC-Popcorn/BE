@@ -22,19 +22,19 @@ public class MailController {
     private final MailService mailService;
 
     @PostMapping("/mailsend")
-    public ResponseEntity<String> mailSend(@RequestBody @Valid EmailRequestDto emailRequestDto){
+    public ResponseEntity<ApiResponse<String>> mailSend(@RequestBody @Valid EmailRequestDto emailRequestDto){
         try {
             mailService.joinEmail(emailRequestDto.getEmail());
-            return ResponseEntity.ok("인증 이메일이 발송되었습니다.");
+            return ResponseEntity.ok(ApiResponse.ok("인증 이메일이 발송되었습니다."));
         } catch (MailException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("메일 발송에 실패함. 다시 시도해주세요.");
+                    .body(ApiResponse.fail(500, "fail","메일 발송에 실패함. 다시 시도해주세요."));
         } catch(IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("잘못된 요청, Redis나 db가 가동되지않습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(500, "fail", "잘못된 요청, Redis나 db가 가동되지않습니다."));
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("잘못된 요청, 입력값을 확인해주세요.");
+                    .body(ApiResponse.fail(400, "fail", "잘못된 요청, 입력값을 확인해주세요."));
         }
     }
 
