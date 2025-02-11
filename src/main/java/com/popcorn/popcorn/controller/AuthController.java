@@ -58,7 +58,7 @@ public class AuthController {
             return ResponseEntity.ok(ApiResponse.ok("사용 가능한 ID"));
         } else{
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.OK)
                     .body(ApiResponse.fail(USER_ALREADY_EXIST_ID));
         }
     }
