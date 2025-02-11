@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
+@Builder
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL) //null값은 JSON 응답에서 제외

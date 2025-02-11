@@ -58,7 +58,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/auth/signup").permitAll()
+                        .requestMatchers("/login", "/", "/auth/signup","/popups/**").permitAll()
                         .requestMatchers("/admin").hasRole(String.valueOf(Role.ADMIN))
                         .requestMatchers("/reissue").permitAll()
                         .anyRequest().authenticated());

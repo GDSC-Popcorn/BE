@@ -1,10 +1,12 @@
 package com.popcorn.popcorn.controller;
 
 import com.popcorn.popcorn.domain.InterestType;
+import com.popcorn.popcorn.domain.dto.CustomUserDetails;
 import com.popcorn.popcorn.domain.dto.HomeDto;
 import com.popcorn.popcorn.domain.dto.PopupDetailDto;
 import com.popcorn.popcorn.service.PopupService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +22,8 @@ public class HomeController {
     private final PopupService popupService;
 
     @GetMapping("/home")
-    public ResponseEntity<?> getAllPopups(@RequestAttribute("userId") Long userId) {
+    public ResponseEntity<?> getAllPopups(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         List<HomeDto> popups = popupService.getAllPopups();
         List<HomeDto> topLikedPopups = popupService.getTopLikedPopups(userId);
         Map<String, List<HomeDto>> categoryPopups = popupService.getInterestedPopups(userId);
@@ -46,7 +49,8 @@ public class HomeController {
     }
 
     @GetMapping("/likes")
-    public ResponseEntity<List<HomeDto>> getLikesPopups(@RequestAttribute("userId")Long userId) {
+    public ResponseEntity<List<HomeDto>> getLikesPopups(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         List<HomeDto> likedPopups = popupService.getLikedPopups(userId);
         return ResponseEntity.ok(likedPopups);
     }

@@ -13,8 +13,6 @@ import java.util.List;
 public interface PopupRepository extends JpaRepository <PopupEntity, Long>{
     //종료일 오름차순으로 팝업 목록 정렬
     List<PopupEntity> findAllByOrderByEndedAtAsc();
-    //팝업 ID로 팝업 조회
-    PopupEntity findByPopupId(Long id);
     //사용자의 관심사와 일치하는 팝업 검색
     @Query("SELECT p FROM PopupEntity p JOIN p.categories c WHERE c IN :categories ORDER BY p.startedAt ASC")
     List<PopupEntity> findByCategories(@Param("categories") List<InterestType> categories);

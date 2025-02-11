@@ -37,7 +37,7 @@ public class PopupService {
     private final UserInterestRepository userInterestRepository;
 
 
-    //홈 화면애 나타낼 팝업 목록 가져오기 메서드
+    //홈 화면에 나타낼 팝업 목록 가져오기 메서드
     public List<HomeDto> getAllPopups() {
         List<PopupEntity> popups = popupRepository.findAllByOrderByEndedAtAsc();
 
@@ -49,14 +49,16 @@ public class PopupService {
     //찜 화면
     public List<HomeDto> getLikedPopups(Long userId) {
         List<LikeEntity> likedPopups = userLikeRepository.findAllByUserId(userId);
-        return likedPopups.stream().map(like -> convertToHomeDTO(like.getPopup()))
-                .sorted(Comparator.comparingInt(HomeDto::getDDay))
+        return likedPopups.stream()
+                .map(like -> convertToHomeDTO(like.getPopup()))
+                .sorted(Comparator.comparingInt(HomeDto::getEndedAt))
                 .collect(Collectors.toList());
     }
     //홈 화면에서의 찜 목록
     public List<HomeDto> getTopLikedPopups(Long userId) {
         List<LikeEntity> likedPopups = userLikeRepository.findAllByUserId(userId);
-        return likedPopups.stream().map(like -> convertToHomeDTO(like.getPopup()))
+        return likedPopups.stream()
+                .map(like -> convertToHomeDTO(like.getPopup()))
                 .sorted(Comparator.comparingInt(HomeDto::getDDay))
                 .limit(10)
                 .collect(Collectors.toList());
@@ -97,15 +99,16 @@ public class PopupService {
         LocalDate startDate = new java.sql.Date(popup.getStartedAt().getTime()).toLocalDate();
         int dDay = (int) ChronoUnit.DAYS.between(today, startDate);
 
-        String popupImgUrl = generateImageUrl(popup.getPopupId());
+        String popupImgUrl = generateImageUrl(popup.getId());
 
         // DTO 반환
-        return new HomeDto(
-                popup.getPopupId(),
-                popup.getTitle(),
-                popupImgUrl,
-                dDay
-        );
+        return HomeDto.builder()
+                .title(popup.getTitle())
+                .popupImage(popupImgUrl)
+                .startedAt(popup.getStartedAt())
+                .endedAt(popup.getEndedAt())
+                .location(popup.getLocation())
+                .build();
     }
 
     //이미지 URL 생성 메서드
@@ -116,10 +119,8 @@ public class PopupService {
     //팝업 상세 정보 메서드
     public PopupDetailDto getPopupDetail(Long popupId,Long userId) {
         //팝업 데이터베이스 조회
-        PopupEntity popup = popupRepository.findByPopupId(popupId);
-        if(popup == null){
-            throw new RuntimeException("Popup not found ID:" + popupId);
-        }
+        PopupEntity popup = popupRepository.findById(popupId)
+                .orElseThrow(() -> new RuntimeException("Popup not found ID: " + popupId));
 
         //이미지 목록
         List<String> popupImages = getPopupImages(popupId);
@@ -136,19 +137,19 @@ public class PopupService {
             isLiked = userLikeRepository.existsByUserIdAndPopupId(userId,popupId);
         }
 
-        return new PopupDetailDto(
-                popup.getId(),
-                popup.getTitle(),
-                popup.getStartedAt(),
-                popup.getEndedAt(),
-                popup.getHours(),
-                popup.getContents(),
-                popup.getLocation(),
-                popup.getOrganizerUrl(),
-                reservationUrl,
-                popupImages,
-                isLiked
-        );
+        return PopupDetailDto.builder()
+                .title(popup.getTitle())
+                .popupImage(popupImages)
+                .hours(popup.getHours())
+                .location(popup.getLocation())
+                .startedAt(popup.getStartedAt())
+                .endedAt(popup.getEndedAt())
+                .organizerUrl(popup.getOrganizerUrl())
+                .contents(popup.getContents())
+                .hours(popup.getHours())
+                .reservationUrl(reservationUrl)
+                .isLiked(isLiked)
+                .build();
     }
 
     //팝업 ID의 이미지 URL 리스트 생성
