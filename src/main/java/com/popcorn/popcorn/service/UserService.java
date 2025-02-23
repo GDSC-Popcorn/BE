@@ -10,6 +10,7 @@ import com.popcorn.popcorn.domain.entity.OauthInfo;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.domain.entity.UserInterest;
 import com.popcorn.popcorn.jwt.JwtUtil;
+import com.popcorn.popcorn.oauth.apple.helper.AppleOauthHelper;
 import com.popcorn.popcorn.oauth.kakao.helper.KakaoOauthHelper;
 import com.popcorn.popcorn.repository.UserInterestRepository;
 import com.popcorn.popcorn.repository.UserRepository;
@@ -74,13 +75,6 @@ public class UserService {
             UserEntity user = userOptional.get();
             return generateLoginResponse(user, false);
         } else {
-            //일단 user만들어 놓기
-            UserEntity user = UserEntity.builder()
-                    .role(Role.USER)
-                    .oauthInfo(oauthInfo)
-                    .username("user" + UUID.randomUUID())
-                    .build();
-            userRepository.save(user);
             return OauthLoginResponse.builder()
                     .isNewUser(true)
                     .build();
@@ -146,24 +140,30 @@ public class UserService {
     }
 
     public OauthLoginResponse signupKakaoWhenFirstOauthLogin(AfterOauthSignupDto afterOauthSignupDto) {
-        String idToken = afterOauthSignupDto.getIdToken();
-        OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByKakaoIdToken(idToken);
-        Optional<UserEntity> user = userRepository.findByOauthInfo(oauthInfo);
-        if(user.isPresent()) {
-            user.get().updateUserInfo(afterOauthSignupDto.getSecondSignupDto().getNickname(), afterOauthSignupDto.getSecondSignupDto().getProfileId());
+        OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByKakaoIdToken(afterOauthSignupDto.getIdToken());
+
+        UserEntity user = UserEntity.builder()
+                .role(Role.USER)
+                .oauthInfo(oauthInfo)
+                .username("user" + UUID.randomUUID())
+                .build();
+        userRepository.save(user);
+        return MatchingUserProcess(afterOauthSignupDto, user);
+    }
+
+    private OauthLoginResponse MatchingUserProcess(AfterOauthSignupDto afterOauthSignupDto, UserEntity user) {
+
+        user.updateUserInfo(afterOauthSignupDto.getSecondSignupDto().getNickname(), afterOauthSignupDto.getSecondSignupDto().getProfileId());
 
 
-            for (InterestType interest : afterOauthSignupDto.getSecondSignupDto().getInterests()) {
-                UserInterest userInterest = new UserInterest();
-                userInterest.setUserAndInterest(user.get(), interest);
-                user.get().addUserInterest(userInterest);
-                userInterestRepository.save(userInterest);
-            }
-            return generateLoginResponse(user.get(), false);
-        } else {
-            throw new UserNotFoundException().EXCEPTION;
+        for (InterestType interest : afterOauthSignupDto.getSecondSignupDto().getInterests()) {
+            UserInterest userInterest = new UserInterest();
+            userInterest.setUserAndInterest(user, interest);
+            user.addUserInterest(userInterest);
+            userInterestRepository.save(userInterest);
         }
-
+        return generateLoginResponse(user, true);
 
     }
+
 }

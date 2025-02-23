@@ -1,15 +1,20 @@
 package com.popcorn.popcorn.oauth.kakao;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
-@AllArgsConstructor
+
 @ConfigurationProperties("oauth")
 public class KakaoProperties {
 
-    private final OauthSecret kakao;  //변수명으로 자동 매핑됨 apple추가하면 됟듯
+    private final OauthSecret kakao;
+
+    @ConstructorBinding
+    public KakaoProperties(OauthSecret kakao) {
+        this.kakao = kakao;
+    }
 
     @Getter
     @Setter
