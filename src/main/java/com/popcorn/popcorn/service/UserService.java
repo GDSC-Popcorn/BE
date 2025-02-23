@@ -2,6 +2,7 @@ package com.popcorn.popcorn.service;
 
 import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.common.error.UserErrorCode;
+import com.popcorn.popcorn.common.exception.UserAlreadyExistException;
 import com.popcorn.popcorn.common.exception.UserNotFoundException;
 import com.popcorn.popcorn.domain.InterestType;
 import com.popcorn.popcorn.domain.Role;
@@ -140,12 +141,17 @@ public class UserService {
 
     public OauthLoginResponse signupKakaoWhenFirstOauthLogin(AfterOauthSignupDto afterOauthSignupDto) {
         OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByKakaoIdToken(afterOauthSignupDto.getIdToken());
-
+        //이미 있는 유저면 에러
+        Optional<UserEntity> byOauthInfo = userRepository.findByOauthInfo(oauthInfo);
+        if(byOauthInfo.isPresent()){
+            throw UserAlreadyExistException.EXCEPTION;
+        }
         UserEntity user = UserEntity.builder()
                 .role(Role.USER)
                 .oauthInfo(oauthInfo)
                 .username("user" + UUID.randomUUID())
                 .build();
+
         userRepository.save(user);
         return MatchingUserProcess(afterOauthSignupDto, user);
     }
