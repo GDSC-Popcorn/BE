@@ -19,7 +19,7 @@ public class KakaoOauthHelper {
     private final KakaoProperties kakaoProperties;
 
     /*
-    * 두번째 세번쨰 인자로 카카오 baseurl, app id를 받아야하는데 프론트랑 일치시켜줘야하는지?
+    * 두번째 세번쨰 인자로 카카오 baseurl, app id를 받아야하는데 프론트랑 일치시켜줘야하는지? -> 일치 시켜줘야함
     * */
     public OIDCDecodePayload getOIDCDecodePayload(String token){
         OIDCPublickeyResponse oidcPublickeyResponse = kakaoOauthClient.getOIDCPublickeys();
