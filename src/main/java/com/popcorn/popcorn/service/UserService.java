@@ -10,7 +10,6 @@ import com.popcorn.popcorn.domain.entity.OauthInfo;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.domain.entity.UserInterest;
 import com.popcorn.popcorn.jwt.JwtUtil;
-import com.popcorn.popcorn.oauth.apple.helper.AppleOauthHelper;
 import com.popcorn.popcorn.oauth.kakao.helper.KakaoOauthHelper;
 import com.popcorn.popcorn.repository.UserInterestRepository;
 import com.popcorn.popcorn.repository.UserRepository;
