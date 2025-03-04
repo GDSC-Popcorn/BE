@@ -22,28 +22,34 @@ public class HomeController {
     private final PopupService popupService;
 
     @GetMapping("/home")
-    public ResponseEntity<?> getAllPopups(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        List<HomeDto> popups = popupService.getAllPopups();
+    public ResponseEntity<?> getAllPopups(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                          @RequestParam(defaultValue = "1") int page) { //페이지 기본값 1
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null; //토큰 옵션
+        List<HomeDto> popups = popupService.getAllPopups(page);
         List<HomeDto> topLikedPopups = popupService.getTopLikedPopups(userId);
         Map<String, List<HomeDto>> categoryPopups = popupService.getInterestedPopups(userId);
+        List<HomeDto> recommendPopups = popupService.getRecommendedPopups();
 
         return ResponseEntity.ok(Map.of(
+                "todayRecommend", recommendPopups,
                 "allPopups" , popups,
                 "topLikedPopups" , topLikedPopups,
                 "categoryPopups", categoryPopups
+
         ));
     }
 
     @GetMapping("/{popupId}")
     public ResponseEntity<PopupDetailDto>getPopupDetail(@PathVariable Long popupId,
-                                                        @RequestParam(required = false) Long userId) { //userId는 선택적
+                                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null; //userId optional-인증되지 않으면 null
         PopupDetailDto popupDetail = popupService.getPopupDetail(popupId, userId);
         return ResponseEntity.ok(popupDetail);
     }
 
     @PostMapping("/{popupId}/toggle-like")
-    public ResponseEntity<String> toggleLike(@PathVariable Long popupId, @RequestParam Long userId) {
+    public ResponseEntity<String> toggleLike(@PathVariable Long popupId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
         boolean isLiked = popupService.toggleLike(userId, popupId);
         return ResponseEntity.ok(isLiked ? "Yes" : "No");
     }

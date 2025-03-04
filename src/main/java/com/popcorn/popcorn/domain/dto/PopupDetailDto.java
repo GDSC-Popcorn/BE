@@ -9,10 +9,13 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL) //null값은 JSON 응답에서 제외
 public class PopupDetailDto {
     private Long popupId;
     private String title;
+    private List<String> categories;
     private Date startedAt;
     private Date endedAt;
     private String hours;
@@ -22,22 +25,5 @@ public class PopupDetailDto {
     private String reservationUrl;
     private List<String> popupImage;
     private Boolean isLiked;
-
-    @Builder
-    public PopupDetailDto(Long id, String title, Date startedAt, Date endedAt,
-                          String hours, String contents, String location,
-                          String organizerUrl, String reservationUrl, List<String> popupImage, Boolean isLiked) {
-        this.popupId = id;
-        this.title = title;
-        this.startedAt = startedAt;
-        this.endedAt = endedAt;
-        this.hours = hours;
-        this.contents = contents;
-        this.location = location;
-        this.organizerUrl = organizerUrl;
-        this.reservationUrl = reservationUrl;
-        this.popupImage = popupImage;
-        this.isLiked = isLiked;
-    }
 
 }

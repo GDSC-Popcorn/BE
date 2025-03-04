@@ -11,12 +11,12 @@ import com.popcorn.popcorn.repository.UserInterestRepository;
 import com.popcorn.popcorn.repository.UserLikeRepository;
 import com.popcorn.popcorn.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -38,10 +38,29 @@ public class PopupService {
 
 
     //홈 화면에 나타낼 팝업 목록 가져오기 메서드
-    public List<HomeDto> getAllPopups() {
-        List<PopupEntity> popups = popupRepository.findAllByOrderByEndedAtAsc();
+    public List<HomeDto> getAllPopups(int page) {
+        int pageSize = 20;
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<PopupEntity> popupPage = popupRepository.findAllByOrderByEndedAtAsc(pageable);
 
-        return popups.stream()
+        return popupPage.stream()
+                .map(this::convertToHomeDTO)
+                .collect(Collectors.toList());
+    }
+
+    //랜덤 추천 팝업
+    public List<HomeDto> getRecommendedPopups() {
+        List<PopupEntity> popups = popupRepository.findAll();
+
+        if(popups.size() <= 5){ // 이미 5개이하면 그대로 반환
+            return popups.stream()
+                    .map(this::convertToHomeDTO)
+                    .collect(Collectors.toList());
+        }
+
+        Collections.shuffle(popups); //팝업 리스트 섞기
+        return popups.stream() //앞에서 5개 선택 후 반환
+                .limit(5)
                 .map(this::convertToHomeDTO)
                 .collect(Collectors.toList());
     }
@@ -51,7 +70,7 @@ public class PopupService {
         List<LikeEntity> likedPopups = userLikeRepository.findAllByUserId(userId);
         return likedPopups.stream()
                 .map(like -> convertToHomeDTO(like.getPopup()))
-                .sorted(Comparator.comparingInt(HomeDto::getEndedAt))
+                .sorted(Comparator.comparing(HomeDto::getEndedAt))
                 .collect(Collectors.toList());
     }
     //홈 화면에서의 찜 목록
@@ -59,7 +78,7 @@ public class PopupService {
         List<LikeEntity> likedPopups = userLikeRepository.findAllByUserId(userId);
         return likedPopups.stream()
                 .map(like -> convertToHomeDTO(like.getPopup()))
-                .sorted(Comparator.comparingInt(HomeDto::getDDay))
+                .sorted(Comparator.comparing(HomeDto::getEndedAt))
                 .limit(10)
                 .collect(Collectors.toList());
     }
@@ -94,15 +113,12 @@ public class PopupService {
     }
 
     private HomeDto convertToHomeDTO(PopupEntity popup) {
-        // D-day 계산: 현재 날짜와 시작일 비교
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = new java.sql.Date(popup.getStartedAt().getTime()).toLocalDate();
-        int dDay = (int) ChronoUnit.DAYS.between(today, startDate);
-
+        
         String popupImgUrl = generateImageUrl(popup.getId());
 
         // DTO 반환
         return HomeDto.builder()
+                .popupId(popup.getId())
                 .title(popup.getTitle())
                 .popupImage(popupImgUrl)
                 .startedAt(popup.getStartedAt())
@@ -138,9 +154,10 @@ public class PopupService {
         }
 
         return PopupDetailDto.builder()
+                .popupId(popup.getId())
                 .title(popup.getTitle())
+                .categories(popup.getCategories().stream().map(Enum::name).collect(Collectors.toList()))
                 .popupImage(popupImages)
-                .hours(popup.getHours())
                 .location(popup.getLocation())
                 .startedAt(popup.getStartedAt())
                 .endedAt(popup.getEndedAt())
