@@ -1,5 +1,6 @@
 package com.popcorn.popcorn.oauth.kakao.controller;
 
+import com.popcorn.popcorn.common.exception.InvalidOauthProviderException;
 import com.popcorn.popcorn.domain.dto.AfterOauthSignupDto;
 import com.popcorn.popcorn.domain.dto.OauthLoginResponse;
 import com.popcorn.popcorn.domain.entity.OauthInfo;
@@ -28,6 +29,9 @@ public class KakaoLoginController {
     * */
     @PostMapping("/oauth/kakao")
     public ResponseEntity<OauthLoginResponse> loginOauth(@RequestBody OauthLoginRequest request){
+        if(!request.getProvider().equals("KAKAO")) {
+            throw InvalidOauthProviderException.EXCEPTION;
+        }
         OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByKakaoIdToken(request.getIdToken());
         return ResponseEntity.ok(userService.loginUser(oauthInfo));
     }

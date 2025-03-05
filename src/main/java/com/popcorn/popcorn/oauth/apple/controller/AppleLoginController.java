@@ -1,5 +1,6 @@
 package com.popcorn.popcorn.oauth.apple.controller;
 
+import com.popcorn.popcorn.common.exception.InvalidOauthProviderException;
 import com.popcorn.popcorn.domain.dto.AfterOauthSignupDto;
 import com.popcorn.popcorn.domain.dto.OauthLoginResponse;
 import com.popcorn.popcorn.domain.entity.OauthInfo;
@@ -24,6 +25,9 @@ public class AppleLoginController {
 
     @PostMapping("/oauth/apple")
     public ResponseEntity<OauthLoginResponse> loginOauth(@RequestBody OauthLoginRequest request){
+        if(!request.getProvider().equals("APPLE")) {
+            throw InvalidOauthProviderException.EXCEPTION;
+        }
         OauthInfo oauthInfo = appleOauthHelper.getOauthInfoByAppleIdToken(request.getIdToken());
         return ResponseEntity.ok(userService.loginUser(oauthInfo));
     }
