@@ -11,6 +11,7 @@ import com.popcorn.popcorn.domain.entity.OauthInfo;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.domain.entity.UserInterest;
 import com.popcorn.popcorn.jwt.JwtUtil;
+import com.popcorn.popcorn.oauth.apple.helper.AppleOauthHelper;
 import com.popcorn.popcorn.oauth.kakao.helper.KakaoOauthHelper;
 import com.popcorn.popcorn.repository.UserInterestRepository;
 import com.popcorn.popcorn.repository.UserRepository;
@@ -32,6 +33,7 @@ public class UserService {
     private final UserInterestRepository userInterestRepository;
     private final RefreshService refreshService;
     private final KakaoOauthHelper kakaoOauthHelper;
+    private final AppleOauthHelper appleOauthHelper;
 
     public void signup(FirstSignupDto firstSignupDto, SecondSignupDto secondSignupDto) {
         boolean isUser = userRepository.existsByUsername(firstSignupDto.getUsername());
@@ -151,9 +153,28 @@ public class UserService {
                 .oauthInfo(oauthInfo)
                 .username("user" + UUID.randomUUID())
                 .build();
-
         userRepository.save(user);
         return MatchingUserProcess(afterOauthSignupDto, user);
+    }
+
+    //중복이 있어서 분기를 나눌까 생각했지만 사실 애플, 카카오 로그인밖에 없기때문에 그냥 이대로 진행.
+    public OauthLoginResponse signupAppleWhenFirstOauthLogin(AfterOauthSignupDto afterOauthSignupDto) {
+        OauthInfo oauthInfo = appleOauthHelper.getOauthInfoByAppleIdToken(afterOauthSignupDto.getIdToken());
+
+        //이미 있는 유저면 에러
+        Optional<UserEntity> byOauthInfo = userRepository.findByOauthInfo(oauthInfo);
+        if(byOauthInfo.isPresent()){
+            throw UserAlreadyExistException.EXCEPTION;
+        }
+
+        UserEntity user = UserEntity.builder()
+                .role(Role.USER)
+                .oauthInfo(oauthInfo)
+                .username("user" + UUID.randomUUID())
+                .build();
+        userRepository.save(user);
+        return MatchingUserProcess(afterOauthSignupDto, user);
+
     }
 
     private OauthLoginResponse MatchingUserProcess(AfterOauthSignupDto afterOauthSignupDto, UserEntity user) {
