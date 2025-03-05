@@ -1,11 +1,11 @@
-package com.popcorn.popcorn.oauth.kakao.controller;
+package com.popcorn.popcorn.oauth.apple.controller;
 
 import com.popcorn.popcorn.common.exception.InvalidOauthProviderException;
 import com.popcorn.popcorn.domain.dto.AfterOauthSignupDto;
 import com.popcorn.popcorn.domain.dto.OauthLoginResponse;
 import com.popcorn.popcorn.domain.entity.OauthInfo;
+import com.popcorn.popcorn.oauth.apple.helper.AppleOauthHelper;
 import com.popcorn.popcorn.oauth.kakao.dto.OauthLoginRequest;
-import com.popcorn.popcorn.oauth.kakao.helper.KakaoOauthHelper;
 import com.popcorn.popcorn.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,36 +14,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
-public class KakaoLoginController {
+public class AppleLoginController {
 
+    private final AppleOauthHelper appleOauthHelper;
     private final UserService userService;
-    private final KakaoOauthHelper kakaoOauthHelper;
 
 
-    /*
-    * 로그인하는 부분
-    * */
-    @PostMapping("/oauth/kakao")
+    @PostMapping("/oauth/apple")
     public ResponseEntity<OauthLoginResponse> loginOauth(@RequestBody OauthLoginRequest request){
-        if(!request.getProvider().equals("KAKAO")) {
+        if(!request.getProvider().equals("APPLE")) {
             throw InvalidOauthProviderException.EXCEPTION;
         }
-        OauthInfo oauthInfo = kakaoOauthHelper.getOauthInfoByKakaoIdToken(request.getIdToken());
+        OauthInfo oauthInfo = appleOauthHelper.getOauthInfoByAppleIdToken(request.getIdToken());
         return ResponseEntity.ok(userService.loginUser(oauthInfo));
     }
 
-    /*
-    * 새로운 소셜로그인유저일경우 회원가입2진행후 토큰 발급
-    * */
-    @PostMapping("/oauth/kakao/signup")
-    public ResponseEntity<OauthLoginResponse> signupWhenFirstOauthLogin(@RequestBody AfterOauthSignupDto afterOauthSignupDto) {
-        return ResponseEntity.ok(userService.signupKakaoWhenFirstOauthLogin(afterOauthSignupDto));
-    }
-    
 
+    @PostMapping("/oauth/apple/signup")
+    public ResponseEntity<OauthLoginResponse> signupWhenFirstOauthLogin(@RequestBody AfterOauthSignupDto afterOauthSignupDto) {
+        return ResponseEntity.ok(userService.signupAppleWhenFirstOauthLogin(afterOauthSignupDto));
+    }
 
 }

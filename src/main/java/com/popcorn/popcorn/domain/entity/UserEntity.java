@@ -2,12 +2,10 @@ package com.popcorn.popcorn.domain.entity;
 
 import com.popcorn.popcorn.domain.InterestType;
 import com.popcorn.popcorn.domain.Role;
+import com.popcorn.popcorn.domain.common.BaseEntity;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,10 +14,11 @@ import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Entity
+@Getter
+@Setter
 @Builder
-public class UserEntity {
+public class UserEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,6 +71,5 @@ public class UserEntity {
         this.nickname = nickname;
         this.profileId = profileId;
     }
-
 
 }

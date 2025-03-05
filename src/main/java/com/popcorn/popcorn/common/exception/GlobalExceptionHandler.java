@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -61,6 +62,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ));
     }
 
+
+    @ExceptionHandler(PopcornException.class)
+    public ResponseEntity<ApiResponse<String>> handlePopcornException(PopcornException ex) {
+        return ResponseEntity.status(ex.getError().getResultCode())
+                .body(ApiResponse.fail(ex.getError()));
+    }
 
 
 }
