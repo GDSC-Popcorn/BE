@@ -21,8 +21,7 @@ public class AppleLoginController {
 
     private final AppleOauthHelper appleOauthHelper;
     private final UserService userService;
-
-
+    
     @PostMapping("/oauth/apple")
     public ResponseEntity<OauthLoginResponse> loginOauth(@RequestBody OauthLoginRequest request){
         if(!request.getProvider().equals("APPLE")) {
