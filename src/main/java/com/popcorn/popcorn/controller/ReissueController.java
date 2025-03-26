@@ -72,7 +72,7 @@ public class ReissueController {
         Map<String, String> tokens = new HashMap<>();
         tokens.put("new_access_token", newAccess);
         tokens.put("new_access_expired_at", accessExpiration.format(formatter));
-        tokens.put("new_refresh_token", refresh);
+        tokens.put("new_refresh_token", newRefresh);
         tokens.put("new_refresh_expired_at", refreshExpiration.format(formatter));
 
         ApiResponse<Map<String, String>> apiResponse = ApiResponse.ok(tokens);
@@ -82,20 +82,5 @@ public class ReissueController {
 
         return ResponseEntity.ok(apiResponse);
     }
-
-//    private void addRefreshEntity(String username, String refresh, long plusHour){
-//        LocalDateTime expirationDate = LocalDateTime.now().plusHours(plusHour);
-//
-//        RefreshEntity refreshEntity = RefreshEntity.builder()
-//                .refresh(refresh)
-//                .username(username)
-//                .expiration(expirationDate)
-//                .build();
-//
-//        refreshRepository.save(refreshEntity);
-//    }
-
-
-
 
 }
