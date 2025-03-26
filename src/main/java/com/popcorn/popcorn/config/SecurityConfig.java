@@ -4,7 +4,7 @@ import com.popcorn.popcorn.domain.Role;
 import com.popcorn.popcorn.jwt.JwtFilter;
 import com.popcorn.popcorn.jwt.JwtUtil;
 import com.popcorn.popcorn.jwt.LoginFilter;
-import com.popcorn.popcorn.repository.RefreshRepository;
+import com.popcorn.popcorn.util.RedisUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,18 +24,15 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final RefreshRepository refreshRepository;
-
 
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
         return configuration.getAuthenticationManager();
     }
 
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, RefreshRepository refreshRepository) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
-        this.refreshRepository = refreshRepository;
     }
 
 
@@ -46,7 +43,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, RedisUtil redisUtil) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable);
@@ -66,7 +63,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisUtil), UsernamePasswordAuthenticationFilter.class);
 
 
         http

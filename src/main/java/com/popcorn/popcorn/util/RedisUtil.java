@@ -33,6 +33,10 @@ public class RedisUtil {
         }
     }
 
+    public void storeRefreshToken(String username, String refreshToken, long ttlHour) {
+        redisTemplate.opsForValue().set(username, refreshToken, Duration.ofHours(ttlHour));
+    }
+
     public void deleteData(String key){
         redisTemplate.delete(key);
     }

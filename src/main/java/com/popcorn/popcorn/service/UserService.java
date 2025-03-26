@@ -15,6 +15,7 @@ import com.popcorn.popcorn.oauth.apple.helper.AppleOauthHelper;
 import com.popcorn.popcorn.oauth.kakao.helper.KakaoOauthHelper;
 import com.popcorn.popcorn.repository.UserInterestRepository;
 import com.popcorn.popcorn.repository.UserRepository;
+import com.popcorn.popcorn.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserInterestRepository userInterestRepository;
-    private final RefreshService refreshService;
     private final KakaoOauthHelper kakaoOauthHelper;
     private final AppleOauthHelper appleOauthHelper;
+    private final RedisUtil redisUtil;
 
     public void signup(FirstSignupDto firstSignupDto, SecondSignupDto secondSignupDto) {
         boolean isUser = userRepository.existsByUsername(firstSignupDto.getUsername());
@@ -91,7 +92,8 @@ public class UserService {
         String accessExpiry = jwtUtil.getExpiryFormatted(access);
         String refreshExpiry = jwtUtil.getExpiryFormatted(refresh);
 
-        refreshService.addRefreshEntity(user.getUsername(), refresh, 24 * 7);
+        redisUtil.storeRefreshToken(user.getUsername(), refresh, 24*7);
+        //refreshService.addRefreshEntity(user.getUsername(), refresh, 24 * 7);
 
         return OauthLoginResponse.builder()
                 .isNewUser(isNewUser)
