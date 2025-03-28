@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @RequiredArgsConstructor
@@ -25,16 +26,18 @@ public class HomeController {
     public ResponseEntity<?> getAllPopups(@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestParam(defaultValue = "1") int page) { //페이지 기본값 1
         Long userId = (userDetails != null) ? userDetails.getUserId() : null; //토큰 옵션
-        List<HomeDto> popups = popupService.getAllPopups(page);
+        Map<String, Object> paginatedPopups = popupService.getAllPopups(page);
         List<HomeDto> topLikedPopups = popupService.getTopLikedPopups(userId);
-        Map<String, List<HomeDto>> categoryPopups = popupService.getInterestedPopups(userId);
+        Map<InterestType, List<HomeDto>> interestedPopups = popupService.getInterestedPopups(userId);
         List<HomeDto> recommendPopups = popupService.getRecommendedPopups();
 
         return ResponseEntity.ok(Map.of(
                 "todayRecommend", recommendPopups,
-                "allPopups" , popups,
+                "allPopups" , paginatedPopups.get("popups"),
+                "totalPages", paginatedPopups.get("totalPages"),
+                "currentPage", paginatedPopups.get("currentPage"),
                 "topLikedPopups" , topLikedPopups,
-                "categoryPopups", categoryPopups
+                "interestedPopups", interestedPopups
 
         ));
     }
@@ -55,21 +58,27 @@ public class HomeController {
     }
 
     @GetMapping("/likes")
-    public ResponseEntity<List<HomeDto>> getLikesPopups(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> getLikesPopups(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                        @RequestParam(defaultValue = "1") int page) {
         Long userId = userDetails.getUserId();
-        List<HomeDto> likedPopups = popupService.getLikedPopups(userId);
-        return ResponseEntity.ok(likedPopups);
+        Map<String, Object> paginatedLikedPopups = popupService.getLikedPopups(userId, page);
+        return ResponseEntity.ok(Map.of(
+                "likedPopups", paginatedLikedPopups.get("popups"),
+                "totalPages", paginatedLikedPopups.get("totalPages"),
+                "currentPage", paginatedLikedPopups.get("currentPage")
+        ));
     }
 
-    @GetMapping("/interests/{category}")
-    public ResponseEntity<List<HomeDto>> getPopupsByCategory(@PathVariable String category) {
+    @GetMapping("/interests/{interest}")
+    public ResponseEntity<?> getInterestsPopups(@PathVariable String interest,
+                                                 @RequestParam(defaultValue = "1") int page) {
         InterestType interestType;
         try{
-            interestType = InterestType.valueOf(category.toUpperCase());
+            interestType = InterestType.valueOf(interest.toUpperCase());
         }catch (IllegalArgumentException e){
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body("잘못된 카테고리가 입력되었습니다 : " + interest);
         }
-        List<HomeDto> popups = popupService.getPopupsByCategory(interestType);
+        Map<String, Object> popups = popupService.getPopupsByInterest(interestType, page);
         return ResponseEntity.ok(popups);
     }
 }

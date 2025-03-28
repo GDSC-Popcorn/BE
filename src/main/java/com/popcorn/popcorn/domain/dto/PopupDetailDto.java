@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.popcorn.popcorn.domain.InterestType;
 import lombok.*;
 
 @Builder
@@ -15,7 +16,7 @@ import lombok.*;
 public class PopupDetailDto {
     private Long popupId;
     private String title;
-    private List<String> categories;
+    private InterestType interest;
     private Date startedAt;
     private Date endedAt;
     private String hours;

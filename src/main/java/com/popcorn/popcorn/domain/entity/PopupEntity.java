@@ -6,16 +6,19 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "popup")
 public class PopupEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
 
     private String title;
     private String contents;
@@ -30,18 +33,9 @@ public class PopupEntity {
     private String popupImage;
     private Boolean confirm;
 
-    @Builder
-    public PopupEntity(String title, String contents, Date startedAt, Date endedAt) {
-        this.title = title;
-        this.contents = contents;
-        this.startedAt = startedAt;
-        this.endedAt = endedAt;
-    }
-
     @OneToMany(mappedBy = "popup",cascade = CascadeType.ALL)
     private List<LikeEntity> likes;
 
-    @ElementCollection(targetClass = InterestType.class)
     @Enumerated(EnumType.STRING)
-    private List<InterestType> categories;
+    private InterestType interest;
 }

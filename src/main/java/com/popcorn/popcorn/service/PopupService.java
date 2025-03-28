@@ -21,8 +21,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @AllArgsConstructor
 @Service
 @Transactional
@@ -32,20 +30,26 @@ public class PopupService {
     private final UserLikeRepository userLikeRepository;
     private final UserRepository userRepository;
 
-    public final String imagePath = "var/app/images/pop_up"; //로컬 파일 경로
     public final String imageBaseUrl = "http://localhost:8080/images/popup"; //URL 기본 경로
     private final UserInterestRepository userInterestRepository;
 
 
     //홈 화면에 나타낼 팝업 목록 가져오기 메서드
-    public List<HomeDto> getAllPopups(int page) {
+    public Map<String, Object> getAllPopups(int page) {
         int pageSize = 20;
         Pageable pageable = PageRequest.of(page - 1, pageSize);
         Page<PopupEntity> popupPage = popupRepository.findAllByOrderByEndedAtAsc(pageable);
 
-        return popupPage.stream()
+        List<HomeDto> popups = popupPage.stream()
                 .map(this::convertToHomeDTO)
                 .collect(Collectors.toList());
+
+        Map<String,Object> response = new HashMap<>();
+        response.put("popups",popups);
+        response.put("currentPage",page);
+        response.put("totalPages",popupPage.getTotalPages());
+
+        return response;
     }
 
     //랜덤 추천 팝업
@@ -66,12 +70,21 @@ public class PopupService {
     }
 
     //찜 화면
-    public List<HomeDto> getLikedPopups(Long userId) {
-        List<LikeEntity> likedPopups = userLikeRepository.findAllByUserId(userId);
-        return likedPopups.stream()
+    public Map<String, Object> getLikedPopups(Long userId, int page) {
+        int pageSize = 10; // 한 페이지당 10개씩 반환
+        Pageable pageable = PageRequest.of(page - 1, pageSize); // JPA는 0부터 시작하므로 page - 1
+
+        List<LikeEntity> likedPopupsPage = userLikeRepository.findAllByUserId(userId);
+
+        List<HomeDto> likedPopups = likedPopupsPage.stream()
                 .map(like -> convertToHomeDTO(like.getPopup()))
-                .sorted(Comparator.comparing(HomeDto::getEndedAt))
-                .collect(Collectors.toList());
+                .toList();
+
+        return Map.of(
+                "popups", likedPopups,
+                "totalPages", likedPopupsPage,
+                "currentPage", page
+        );
     }
     //홈 화면에서의 찜 목록
     public List<HomeDto> getTopLikedPopups(Long userId) {
@@ -84,32 +97,36 @@ public class PopupService {
     }
 
     //관심사
-    public Map<String, List<HomeDto>> getInterestedPopups(Long userId) {
+    public Map<InterestType, List<HomeDto>> getInterestedPopups(Long userId) {
         List<InterestType> interests = userInterestRepository.findInterestsByUserId(userId);
         if (interests.isEmpty()) {
             return Map.of();
         }
+        Pageable pageable = PageRequest.of(0, 10); //카테고리 별 최대 10개 표시
+        List<PopupEntity> popups = popupRepository.findByInterestIn(interests, pageable);
 
-        // 관심사별 팝업 분류
-        Map<String, List<HomeDto>> categoryPopups = new HashMap<>();
-        for (InterestType interest : interests) {
-            List<PopupEntity> popups = popupRepository.findByCategories(interests);
-            List<HomeDto> homeDtos = popups.stream()
-                    .map(this::convertToHomeDTO)
-                    .limit(10)
-                    .collect(Collectors.toList());
-
-            categoryPopups.put(interest.name(), homeDtos);
-        }
-        return categoryPopups;
+        // 관심사별 팝업 분류 DTO 변환
+        return popups.stream()
+                .map(this::convertToHomeDTO)
+                .collect(Collectors.groupingBy(HomeDto::getInterest));
     }
 
     //관심사 별 화면
-    public List<HomeDto> getPopupsByCategory(InterestType category) {
-        List<PopupEntity> popups = popupRepository.findByCategories(category);
-        return popups.stream()
+    public Map<String, Object> getPopupsByInterest(InterestType interest, int page) {
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+        Page<PopupEntity> interestedPopupsPage = popupRepository.findByInterest(interest, pageable);
+
+        List<HomeDto> interestedPopups = interestedPopupsPage.stream()
                 .map(this::convertToHomeDTO)
                 .collect(Collectors.toList());
+
+        return Map.of(
+                "popups", interestedPopups,
+                "totalPages", interestedPopupsPage.getTotalPages(),
+                "currentPage", page
+        );
     }
 
     private HomeDto convertToHomeDTO(PopupEntity popup) {
@@ -124,12 +141,13 @@ public class PopupService {
                 .startedAt(popup.getStartedAt())
                 .endedAt(popup.getEndedAt())
                 .location(popup.getLocation())
+                .interest(popup.getInterest())
                 .build();
     }
 
     //이미지 URL 생성 메서드
     private String generateImageUrl(Long popupId) {
-        return "https://localhost:8080/images/popup/" + popupId + "/01.jpg"; //대표 이미지
+        return "http://localhost:8080/images/popup/" + popupId + "/01.jpg"; //대표 이미지
     }
 
     //팝업 상세 정보 메서드
@@ -156,7 +174,7 @@ public class PopupService {
         return PopupDetailDto.builder()
                 .popupId(popup.getId())
                 .title(popup.getTitle())
-                .categories(popup.getCategories().stream().map(Enum::name).collect(Collectors.toList()))
+                .interest(popup.getInterest())
                 .popupImage(popupImages)
                 .location(popup.getLocation())
                 .startedAt(popup.getStartedAt())
@@ -172,14 +190,9 @@ public class PopupService {
     //팝업 ID의 이미지 URL 리스트 생성
     private List<String> getPopupImages(Long popupId) {
         List<String> popupImageUrls = new ArrayList<>();
-        File popupDir = new File(imagePath + "/" + popupId);
-        if(popupDir.exists() && popupDir.isDirectory()){
-            File[] files = popupDir.listFiles((dir, name) -> name.endsWith(".jpg") || name.endsWith(".png"));
-            if(files != null){
-                for(File file : files){
-                    popupImageUrls.add(imageBaseUrl + "/" +popupId + "/"+ file.getName());
-                }
-            }
+        for (int i = 0; i < 10; i++) {
+            String filename = String.format("%02d.jpg",i);
+            popupImageUrls.add(imageBaseUrl + "/" + popupId + "/" + filename);
         }
         return popupImageUrls;
     }
