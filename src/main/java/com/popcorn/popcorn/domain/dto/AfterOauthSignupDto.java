@@ -1,6 +1,5 @@
 package com.popcorn.popcorn.domain.dto;
 
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,11 +7,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class SignupRequestDto {
+public class AfterOauthSignupDto {
 
-    @Valid
-    private FirstSignupDto firstSignupDto;
+    private String idToken;
 
-    @Valid
     private SecondSignupDto secondSignupDto;
 }

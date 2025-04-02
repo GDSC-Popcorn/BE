@@ -26,10 +26,4 @@ public class UserInterest {
         this.interest = interestType;
     }
 
-
-
-    /* @ManyToOne
-    @JoinColumn(name = "popup_id")
-    private PopUpEntity popUp; */
-
 }

@@ -17,6 +17,11 @@ repositories {
 	mavenCentral()
 }
 
+//Feign
+ext {
+	set('springCloudVersion', "2023.0.3")
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -25,6 +30,10 @@ dependencies {
 	//lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	//Feign
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
 	//mysql
 	runtimeOnly 'com.mysql:mysql-connector-j'
@@ -34,6 +43,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	//mail
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	//redis 추가
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 
 	//lombok
@@ -46,6 +60,15 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//@ConfigurationProperties 사용하기 위해
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
 }
 
 tasks.named('test') {

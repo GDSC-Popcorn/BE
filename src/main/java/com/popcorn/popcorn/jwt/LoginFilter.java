@@ -1,13 +1,12 @@
 package com.popcorn.popcorn.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.popcorn.popcorn.domain.entity.RefreshEntity;
-import com.popcorn.popcorn.repository.RefreshRepository;
+import com.popcorn.popcorn.common.api.ApiResponse;
+import com.popcorn.popcorn.util.RedisUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,12 +26,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final RefreshRepository refreshRepository;
+    private final RedisUtil redisUtil;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshRepository refreshRepository) {
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RedisUtil redisUtil) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.refreshRepository = refreshRepository;
+        this.redisUtil = redisUtil;
     }
 
 
@@ -66,7 +65,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String access = jwtUtil.createJwt("access", username, role, 1); //60분
         String refresh = jwtUtil.createJwt("refresh", username, role, 24*7); //7일
 
-        addRefreshEntity(username, refresh, 24*7);
+        redisUtil.storeRefreshToken(username, refresh, 24*7);
+        //addRefreshEntity(username, refresh, 24*7);
 
         // 만료 시간 계산
         ZonedDateTime now = ZonedDateTime.now();
@@ -81,9 +81,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         tokens.put("refresh_token", refresh);
         tokens.put("refresh_expired_at", refreshExpiration.format(formatter));
 
+        ApiResponse<Map<String, String>> apiResponse = ApiResponse.ok(tokens);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(tokens);
+        String json = objectMapper.writeValueAsString(apiResponse);
 
         response.setContentType("application/json");
         response.setStatus(HttpStatus.OK.value());
@@ -91,20 +92,31 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     }
 
-    private void addRefreshEntity(String username, String refresh, long plusHour){
-        LocalDateTime expirationDate = LocalDateTime.now().plusHours(plusHour);
-
-        RefreshEntity refreshEntity = RefreshEntity.builder()
-                .username(username)
-                .refresh(refresh)
-                .expiration(expirationDate)
-                .build();
-
-        refreshRepository.save(refreshEntity);
-    }
+//    private void addRefreshEntity(String username, String refresh, long plusHour){
+//        LocalDateTime expirationDate = LocalDateTime.now().plusHours(plusHour);
+//
+//        RefreshEntity refreshEntity = RefreshEntity.builder()
+//                .username(username)
+//                .refresh(refresh)
+//                .expiration(expirationDate)
+//                .build();
+//
+//        refreshRepository.save(refreshEntity);
+//    }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        response.setStatus(401);
+        ApiResponse<String> apiResponse = ApiResponse.fail(
+                HttpStatus.UNAUTHORIZED.value(),
+                "fail",
+                "Invalid username or password"
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(apiResponse);
+        response.setContentType("application/json");
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write(json);
+
     }
 }
