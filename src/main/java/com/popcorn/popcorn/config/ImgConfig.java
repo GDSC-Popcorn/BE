@@ -11,7 +11,7 @@ public class ImgConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/popup/**")
-                .addResourceLocations("file:var/app/images/pop_up")
+                .addResourceLocations("file:/Users/idblab/Desktop/project/popcorn/BE/src/main/resources/static/images/")
                 .setCachePeriod(3600); //1시간 동안 캐싱
     }
 }

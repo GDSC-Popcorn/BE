@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -30,7 +29,7 @@ public class PopupService {
     private final UserLikeRepository userLikeRepository;
     private final UserRepository userRepository;
 
-    public final String imageBaseUrl = "http://localhost:8080/images/popup"; //URL 기본 경로
+    public final String imageBaseUrl = "http://localhost:8080/images"; //URL 기본 경로
     private final UserInterestRepository userInterestRepository;
 
 
@@ -74,7 +73,7 @@ public class PopupService {
         int pageSize = 10; // 한 페이지당 10개씩 반환
         Pageable pageable = PageRequest.of(page - 1, pageSize); // JPA는 0부터 시작하므로 page - 1
 
-        List<LikeEntity> likedPopupsPage = userLikeRepository.findAllByUserId(userId);
+        List<LikeEntity> likedPopupsPage = userLikeRepository.findAllByUserId(userId, pageable);
 
         List<HomeDto> likedPopups = likedPopupsPage.stream()
                 .map(like -> convertToHomeDTO(like.getPopup()))
@@ -88,7 +87,7 @@ public class PopupService {
     }
     //홈 화면에서의 찜 목록
     public List<HomeDto> getTopLikedPopups(Long userId) {
-        List<LikeEntity> likedPopups = userLikeRepository.findAllByUserId(userId);
+        List<LikeEntity> likedPopups = userLikeRepository.findTop10ByUserIdOrderByIdDesc(userId);
         return likedPopups.stream()
                 .map(like -> convertToHomeDTO(like.getPopup()))
                 .sorted(Comparator.comparing(HomeDto::getEndedAt))
@@ -147,7 +146,7 @@ public class PopupService {
 
     //이미지 URL 생성 메서드
     private String generateImageUrl(Long popupId) {
-        return "http://localhost:8080/images/popup/" + popupId + "/01.jpg"; //대표 이미지
+        return "http://localhost:8080/images/" + popupId + "/01.jpg"; //대표 이미지
     }
 
     //팝업 상세 정보 메서드
