@@ -49,6 +49,13 @@ dependencies {
 	//redis 추가
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+
+	//lombok
+	compileOnly 'org.projectlombok:lombok'
+
+	//mysql
+	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
+
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'

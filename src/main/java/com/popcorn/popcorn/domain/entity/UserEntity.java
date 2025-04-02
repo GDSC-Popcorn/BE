@@ -59,6 +59,13 @@ public class UserEntity extends BaseEntity {
         }
         this.interests.add(userInterest);
     }
+    
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<LikeEntity> likes;
+
+    public Long getUserId(){
+        return id;
+    }
 
     /*
     /*
