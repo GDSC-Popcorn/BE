@@ -19,8 +19,8 @@ public class PopupDetailDto {
     private InterestType interest;
     private Date startedAt;
     private Date endedAt;
-    private String hours;
-    private String contents;
+    private String business_hours;
+    private String content;
     private String location;
     private String organizerUrl;
     private String reservationUrl;

@@ -179,8 +179,8 @@ public class PopupService {
                 .startedAt(popup.getStartedAt())
                 .endedAt(popup.getEndedAt())
                 .organizerUrl(popup.getOrganizerUrl())
-                .contents(popup.getContents())
-                .hours(popup.getHours())
+                .content(popup.getContent())
+                .business_hours(popup.getBusiness_hours())
                 .reservationUrl(reservationUrl)
                 .isLiked(isLiked)
                 .build();

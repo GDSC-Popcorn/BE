@@ -6,14 +6,13 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "popup")
+@Table(name = "pop_up")
 public class PopupEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,17 +20,17 @@ public class PopupEntity {
 
 
     private String title;
-    private String contents;
+    @Column(length = 2000)
+    private String content;
     private Date startedAt;
     private Date endedAt;
-    private String hours;
+    private String business_hours;
     private Float latitude; //위도
     private Float longitude; //경도
     private String location;
     private String organizerUrl;
     private String reservationUrl;
-    private String popupImage;
-    private Boolean confirm;
+    private Boolean confirmed;
 
     @OneToMany(mappedBy = "popup",cascade = CascadeType.ALL)
     private List<LikeEntity> likes;
