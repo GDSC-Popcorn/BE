@@ -165,8 +165,6 @@ public class PopupService {
         //찜 여부 확인
         boolean isLiked = false;
         if(userId != null){ //userId가 있는 경우에만 찜 여부 확인
-            UserEntity user = userRepository.findById(userId)
-                    .orElseThrow(()->new RuntimeException("User not found ID:" + userId));
             isLiked = userLikeRepository.existsByUserIdAndPopupId(userId,popupId);
         }
 
@@ -179,8 +177,8 @@ public class PopupService {
                 .startedAt(popup.getStartedAt())
                 .endedAt(popup.getEndedAt())
                 .organizerUrl(popup.getOrganizerUrl())
-                .contents(popup.getContents())
-                .hours(popup.getHours())
+                .content(popup.getContent())
+                .business_hours(popup.getBusiness_hours())
                 .reservationUrl(reservationUrl)
                 .isLiked(isLiked)
                 .build();
