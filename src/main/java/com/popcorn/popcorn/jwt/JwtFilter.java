@@ -26,12 +26,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String accessToken = request.getHeader("access");
+        String authorizationHeader = request.getHeader("Authorization");
 
-        if(accessToken == null){
+        String uri = request.getRequestURI();
+        // /reissue 요청은 access token 검사 스킵
+        if ("/reissue".equals(uri)) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String accessToken = authorizationHeader.substring(7);
 
         try {
             jwtUtil.isExpired(accessToken);

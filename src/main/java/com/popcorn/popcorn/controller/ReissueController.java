@@ -33,11 +33,11 @@ public class ReissueController {
 
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response){
-        String refresh = request.getHeader("X-refresh-token");
-
-        if(refresh == null){
-            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return new ResponseEntity<>("No Authorization Header", HttpStatus.BAD_REQUEST);
         }
+        String refresh = authorizationHeader.substring(7);
 
         try {
             jwtUtil.isExpired(refresh);
@@ -76,9 +76,6 @@ public class ReissueController {
         tokens.put("new_refresh_expired_at", refreshExpiration.format(formatter));
 
         ApiResponse<Map<String, String>> apiResponse = ApiResponse.ok(tokens);
-
-        response.setHeader("access", newAccess);
-        response.setHeader("X-refresh-token", newRefresh);
 
         return ResponseEntity.ok(apiResponse);
     }

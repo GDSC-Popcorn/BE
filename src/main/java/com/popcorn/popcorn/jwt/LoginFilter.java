@@ -91,18 +91,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write(json);
 
     }
-
-//    private void addRefreshEntity(String username, String refresh, long plusHour){
-//        LocalDateTime expirationDate = LocalDateTime.now().plusHours(plusHour);
-//
-//        RefreshEntity refreshEntity = RefreshEntity.builder()
-//                .username(username)
-//                .refresh(refresh)
-//                .expiration(expirationDate)
-//                .build();
-//
-//        refreshRepository.save(refreshEntity);
-//    }
+    
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
