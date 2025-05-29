@@ -29,7 +29,7 @@ public class PopupService {
     private final UserLikeRepository userLikeRepository;
     private final UserRepository userRepository;
 
-    public final String imageBaseUrl = "http://localhost:8080/images"; //URL 기본 경로
+    public final String imageBaseUrl = "http://popcorm.store/images"; //URL 기본 경로
     private final UserInterestRepository userInterestRepository;
 
 
@@ -146,7 +146,7 @@ public class PopupService {
 
     //이미지 URL 생성 메서드
     private String generateImageUrl(Long popupId) {
-        return "http://localhost:8080/images/" + popupId + "/01.jpg"; //대표 이미지
+        return "http://popcorm.store/images/" + popupId + "/01.jpg"; //대표 이미지
     }
 
     //팝업 상세 정보 메서드
