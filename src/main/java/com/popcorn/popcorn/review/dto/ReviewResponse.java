@@ -14,6 +14,7 @@ public record ReviewResponse(
         Double rating,
         List<String> imageUrls,
         LocalDateTime createdAt,
+        LocalDateTime modifiedAt,
         int likeCount,
         String nickname
 ) {
@@ -27,6 +28,7 @@ public record ReviewResponse(
                                         .map(s3Service::getReviewImageUrl)
                                                 .toList(),
                 review.getCreatedAt(),
+                review.getModifiedAt(),
                 review.getLikeCount(),
                 review.getUser().getNickname()
         );

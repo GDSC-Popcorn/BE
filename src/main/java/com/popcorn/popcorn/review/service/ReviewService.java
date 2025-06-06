@@ -2,7 +2,7 @@ package com.popcorn.popcorn.review.service;
 
 import com.popcorn.popcorn.common.exception.PopUpNotFoundExceptioin;
 import com.popcorn.popcorn.common.exception.ReviewNotFoundExceptioin;
-import com.popcorn.popcorn.common.exception.ReviewNotMatchExceptioin;
+import com.popcorn.popcorn.common.exception.ReviewNotMatchException;
 import com.popcorn.popcorn.common.exception.UserNotFoundException;
 import com.popcorn.popcorn.domain.dto.PagedResponse;
 import com.popcorn.popcorn.domain.entity.PopupEntity;
@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -58,7 +59,9 @@ public class ReviewService {
 
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> ReviewNotFoundExceptioin.EXCEPTION);
-
+        if(review.getUser().getId() != userId) {
+            throw ReviewNotMatchException.EXCEPTION;
+        }
         for(ReviewImage img : review.getReviewImages()) {
             s3Service.deleteImage(img.getImageKey());
         }
@@ -77,11 +80,12 @@ public class ReviewService {
         return ReviewResponse.from(review ,s3Service);
     }
 
+    @Transactional
     public void deleteById(Long reviewId, Long userId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> ReviewNotFoundExceptioin.EXCEPTION);
         if(review.getUser().getId() != userId) {
-            throw ReviewNotMatchExceptioin.EXCEPTION;
+            throw ReviewNotMatchException.EXCEPTION;
         }
         for(ReviewImage img : review.getReviewImages()) {
             s3Service.deleteImage(img.getImageKey());
