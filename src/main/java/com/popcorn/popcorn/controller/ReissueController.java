@@ -54,12 +54,14 @@ public class ReissueController {
 
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
+        Long userId = jwtUtil.getUserId(refresh);
         String storedRefresh = redisUtil.getData(username);
+
         if(storedRefresh == null || !storedRefresh.equals(refresh)){
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
-        String newAccess = jwtUtil.createJwt("access", username, role, accessTokenPlusHour);
-        String newRefresh = jwtUtil.createJwt("refresh", username, role, refreshTokenPlusHour);
+        String newAccess = jwtUtil.createJwt("access", username, role, userId, accessTokenPlusHour);
+        String newRefresh = jwtUtil.createJwt("refresh", username, role, userId, refreshTokenPlusHour);
 
         redisUtil.storeRefreshToken(username, newRefresh, refreshTokenPlusHour);
 
