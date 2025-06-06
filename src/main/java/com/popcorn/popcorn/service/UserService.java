@@ -52,7 +52,7 @@ public class UserService {
                 .nickname(secondSignupDto.getNickname())
                 .email(firstSignupDto.getEmail())
                 .name(firstSignupDto.getName())
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .profileId(secondSignupDto.getProfileId())
                 .build();
 
@@ -86,8 +86,8 @@ public class UserService {
     }
 
     private OauthLoginResponse generateLoginResponse(UserEntity user, boolean isNewUser) {
-        String access = jwtUtil.createJwt("access", user.getUsername(), user.getRole().toString(), 1);
-        String refresh = jwtUtil.createJwt("refresh", user.getUsername(), user.getRole().toString(), 24 * 7);
+        String access = jwtUtil.createJwt("access", user.getUsername(), user.getRole().toString(), user.getUserId(), 1);
+        String refresh = jwtUtil.createJwt("refresh", user.getUsername(), user.getRole().toString(), user.getUserId(), 24 * 7);
 
         String accessExpiry = jwtUtil.getExpiryFormatted(access);
         String refreshExpiry = jwtUtil.getExpiryFormatted(refresh);
@@ -151,7 +151,7 @@ public class UserService {
             throw UserAlreadyExistException.EXCEPTION;
         }
         UserEntity user = UserEntity.builder()
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .oauthInfo(oauthInfo)
                 .username("user" + UUID.randomUUID())
                 .build();
@@ -170,7 +170,7 @@ public class UserService {
         }
 
         UserEntity user = UserEntity.builder()
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .oauthInfo(oauthInfo)
                 .username("user" + UUID.randomUUID())
                 .build();
