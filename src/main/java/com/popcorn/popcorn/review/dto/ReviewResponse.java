@@ -16,9 +16,10 @@ public record ReviewResponse(
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
         int likeCount,
-        String nickname
+        String nickname,
+        boolean liked
 ) {
-    public static ReviewResponse from(Review review, S3Service s3Service) {
+    public static ReviewResponse from(Review review, S3Service s3Service, boolean liked) {
         return new ReviewResponse(
                 review.getId(),
                 review.getContents(),
@@ -30,7 +31,9 @@ public record ReviewResponse(
                 review.getCreatedAt(),
                 review.getModifiedAt(),
                 review.getLikeCount(),
-                review.getUser().getNickname()
+                review.getUser().getNickname(),
+                liked
+
         );
     }
 

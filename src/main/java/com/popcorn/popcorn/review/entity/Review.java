@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @AllArgsConstructor
@@ -51,8 +52,20 @@ public class Review extends BaseEntity {
         reviewImages.clear();
     }
 
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount = Math.max(0, this.likeCount - 1);
+    }
+
     public void update(String content, double rating) {
-        this.contents = content;
-        this.rating = rating;
+        if(!Objects.equals(this.contents, content)) {
+            this.contents = content;
+        }
+        if(this.rating != rating) {
+            this.rating = rating;
+        }
     }
 }

@@ -13,6 +13,8 @@ import com.popcorn.popcorn.review.dto.ReviewRequest;
 import com.popcorn.popcorn.review.dto.ReviewResponse;
 import com.popcorn.popcorn.review.entity.Review;
 import com.popcorn.popcorn.review.entity.ReviewImage;
+import com.popcorn.popcorn.review.entity.ReviewLike;
+import com.popcorn.popcorn.review.repository.ReviewLikeRepository;
 import com.popcorn.popcorn.review.repository.ReviewRepository;
 import com.popcorn.popcorn.service.S3Service;
 import jakarta.validation.Valid;
@@ -23,8 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -34,6 +38,7 @@ public class ReviewService {
     private final PopupRepository popupRepository;
     private final S3Service s3Service;
     private final ReviewRepository reviewRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
 
     @Transactional
     public ReviewResponse createReview(@Valid ReviewRequest request, List<MultipartFile> imgs, Long userId) {
@@ -51,7 +56,7 @@ public class ReviewService {
             reviewRepository.save(review);
         }
 
-        return ReviewResponse.from(review, s3Service);
+        return ReviewResponse.from(review, s3Service, false);
     }
 
     @Transactional
@@ -70,6 +75,9 @@ public class ReviewService {
 
         if(imgs != null) {
             for(MultipartFile file : imgs) {
+                // 파일이 비어있으면 건너뜀 (0KB 방지)
+                if (file.isEmpty()) continue;
+
                 String key = s3Service.reviewImageUpload(file, review.getId());
                 review.addReviewImage(new ReviewImage(key));
             }
@@ -77,7 +85,10 @@ public class ReviewService {
 
         review.update(request.content(), request.rating());
         reviewRepository.save(review);
-        return ReviewResponse.from(review ,s3Service);
+
+        boolean liked = reviewLikeRepository.existsByUserIdAndReviewId(userId, reviewId);
+
+        return ReviewResponse.from(review ,s3Service, liked);
     }
 
     @Transactional
@@ -94,12 +105,42 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
-    public PagedResponse<ReviewResponse> getReviesByPopup(Long popupId, Pageable pageable) {
+    public PagedResponse<ReviewResponse> getReviewsByPopup(Long popupId, Long userId, Pageable pageable) {
         PopupEntity popup = popupRepository.findById(popupId).
                 orElseThrow(() -> PopUpNotFoundExceptioin.EXCEPTION);
 
-        Page<ReviewResponse> rev =  reviewRepository.findByPopup(popup, pageable)
-                .map(review -> ReviewResponse.from(review, s3Service));
-        return PagedResponse.from(rev);
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.EXCEPTION);
+
+        Page<Review> reviews =  reviewRepository.findByPopupWithUserAndImages(popup, pageable);
+
+        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
+        List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByUserIdAndReviewIds(userId, reviewIds);
+        Set<Long> likedReviewIdSet = new HashSet<>(likedReviewIds);
+
+        Page<ReviewResponse> res = reviews.map(r -> ReviewResponse.from(r, s3Service, likedReviewIdSet.contains(r.getId())));
+        return PagedResponse.from(res);
+    }
+
+    @Transactional
+    public boolean toggleLike(Long reviewId, Long userId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> ReviewNotFoundExceptioin.EXCEPTION);
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.EXCEPTION);
+
+        Optional<ReviewLike> existing = reviewLikeRepository.findByUserAndReview(user, review);
+
+        if (existing.isPresent()) {
+            reviewLikeRepository.delete(existing.get());
+            review.decreaseLikeCount();  // likeCount -= 1
+            return false;
+        } else {
+            reviewLikeRepository.save(new ReviewLike(user, review));
+            review.increaseLikeCount();  // likeCount += 1
+            return true;
+        }
+
     }
 }

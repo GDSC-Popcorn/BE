@@ -18,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -33,10 +31,11 @@ public class ReviewController {
     @GetMapping("/popups/{popupId}")
     public ResponseEntity<ApiResponse<PagedResponse<ReviewResponse>>> getAllReview(
             @PathVariable Long popupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size =20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(
-                ApiResponse.ok(reviewService.getReviesByPopup(popupId, pageable))
+                ApiResponse.ok(reviewService.getReviewsByPopup(popupId, userDetails.getUserId(), pageable))
         );
     }
 
@@ -52,7 +51,7 @@ public class ReviewController {
 
 
     @PostMapping("/modify/{reviewId}")
-    public ResponseEntity<?> modifyReview(
+    public ResponseEntity<ApiResponse<ReviewResponse>> modifyReview(
             @PathVariable Long reviewId,
             @RequestPart("request") @Valid ReviewRequest request,
             @RequestPart(value = "images", required = false)List<MultipartFile> imgs,
@@ -60,6 +59,16 @@ public class ReviewController {
     ) {
 
         return ResponseEntity.ok().body(ApiResponse.ok(reviewService.modifyReview(reviewId, request, imgs, userDetails.getUserId())));
+    }
+
+    @PostMapping("/{reviewId}/toggle-review-like")
+    public ResponseEntity<ApiResponse<Boolean>> likeReviewButton(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long userId = userDetails.getUserId();
+        boolean liked = reviewService.toggleLike(reviewId, userId);
+        return ResponseEntity.ok().body(ApiResponse.ok(liked));
     }
 
 
