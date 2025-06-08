@@ -50,6 +50,8 @@ public class ReviewService {
         reviewRepository.save(review);
         if(imgs != null) {
             for(MultipartFile file: imgs) {
+                // 파일이 비어있으면 건너뜀 (0KB 방지)
+                if (file.isEmpty()) continue;
                 String key = s3Service.reviewImageUpload(file, review.getId());
                 review.addReviewImage(new ReviewImage(key));
             }
