@@ -17,8 +17,8 @@ public enum ErrorCode implements ErrorCodeIfs{
     TOKEN_EXPIRED("fail", 401, "만료된 토큰"),
     INVALID_TOKEN("fail", 401,"잘못된 토큰, 재 로그인해주세요"),
 
-    POPUP_NOT_FOUND("fail", 202, "존재하지 않는 팝업"),
-    REVIEW_NOT_FOUND("fail", 202, "존재하지 않는 리뷰"),
+    POPUP_NOT_FOUND("fail", 404, "존재하지 않는 팝업"),
+    REVIEW_NOT_FOUND("fail", 404, "존재하지 않는 리뷰"),
     S3_UPLOAD_FAILED("fail", 500, "s3에 업로드 실패"),
     REVIEW_NOT_MATCH("fail", 403, "리뷰 글쓴이가 일치 하지 않음");
 
