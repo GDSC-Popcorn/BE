@@ -23,7 +23,7 @@ public class HomeController {
     private final PopupService popupService;
 
     @GetMapping("/home")
-    public ResponseEntity<?> getAllPopups(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<Map<String, Object>> getAllPopups(@RequestHeader(value = "Authorization", required = false)@AuthenticationPrincipal CustomUserDetails userDetails,
                                           @RequestParam(defaultValue = "1") int page) { //페이지 기본값 1
         Long userId = (userDetails != null) ? userDetails.getUserId() : null; //토큰 옵션
         Map<String, Object> paginatedPopups = popupService.getAllPopups(page);
@@ -69,7 +69,7 @@ public class HomeController {
         ));
     }
 
-    @GetMapping("/interests/{interest}")
+    @GetMapping("/interests/")
     public ResponseEntity<?> getInterestsPopups(@PathVariable String interest,
                                                  @RequestParam(defaultValue = "1") int page) {
         InterestType interestType;
