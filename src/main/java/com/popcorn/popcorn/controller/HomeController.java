@@ -23,8 +23,9 @@ public class HomeController {
     private final PopupService popupService;
 
     @GetMapping("/home")
-    public ResponseEntity<Map<String, Object>> getAllPopups(@RequestHeader(value = "Authorization", required = false)@AuthenticationPrincipal CustomUserDetails userDetails,
-                                          @RequestParam(defaultValue = "1") int page) { //페이지 기본값 1
+    public ResponseEntity<Map<String, Object>> getAllPopups(@RequestHeader(value = "Authorization", required = false)
+                                                                @AuthenticationPrincipal CustomUserDetails userDetails,
+                                                            @RequestParam(defaultValue = "1") int page) { //페이지 기본값 1
         Long userId = (userDetails != null) ? userDetails.getUserId() : null; //토큰 옵션
         Map<String, Object> paginatedPopups = popupService.getAllPopups(page);
         List<HomeDto> topLikedPopups = popupService.getTopLikedPopups(userId);
@@ -33,12 +34,11 @@ public class HomeController {
 
         return ResponseEntity.ok(Map.of(
                 "todayRecommend", recommendPopups,
-                "allPopups" , paginatedPopups.get("popups"),
+                "allPopups", paginatedPopups.get("popups"),
+                "topLikedPopups", topLikedPopups,
+                "categoryPopups", interestedPopups,
                 "totalPages", paginatedPopups.get("totalPages"),
-                "currentPage", paginatedPopups.get("currentPage"),
-                "topLikedPopups" , topLikedPopups,
-                "interestedPopups", interestedPopups
-
+                "currentPages", paginatedPopups.get("currentPage")
         ));
     }
 

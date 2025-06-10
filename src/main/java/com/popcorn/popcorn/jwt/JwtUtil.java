@@ -1,6 +1,9 @@
 package com.popcorn.popcorn.jwt;
 
 
+import com.popcorn.popcorn.common.exception.InvalidTokenException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -9,6 +12,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -37,6 +41,25 @@ public class JwtUtil {
 
     public Boolean isExpired(String token){
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+    }
+
+    public long getExpiry(String token){
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getExpiration().getTime();
+        } catch (JwtException e) {
+            throw InvalidTokenException.EXCEPTION;
+        }
+    }
+
+    public String getExpiryFormatted(String token) {
+        long expiry = getExpiry(token);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formatter.format(new Date(expiry));
     }
 
     public String createJwt(String category, String username, String role, long expirationHour){
