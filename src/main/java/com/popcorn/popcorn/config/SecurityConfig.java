@@ -4,7 +4,7 @@ import com.popcorn.popcorn.domain.Role;
 import com.popcorn.popcorn.jwt.JwtFilter;
 import com.popcorn.popcorn.jwt.JwtUtil;
 import com.popcorn.popcorn.jwt.LoginFilter;
-import com.popcorn.popcorn.util.RedisUtil;
+import com.popcorn.popcorn.repository.RefreshRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,15 +24,18 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final RefreshRepository refreshRepository;
+
 
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
         return configuration.getAuthenticationManager();
     }
 
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, RefreshRepository refreshRepository) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.refreshRepository = refreshRepository;
     }
 
 
@@ -43,7 +46,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, RedisUtil redisUtil) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable);
@@ -57,13 +60,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/login", "/", "/auth/signup","/mailsend", "/mailauthChk", "/reissue", "/auth/**", "/api/v1/auth/**", "/images/**" ).permitAll()
                         .requestMatchers("/admin").hasRole(String.valueOf(Role.ADMIN))
+                        .requestMatchers("/reissue").permitAll()
                         .anyRequest().authenticated());
-                                 //따로 필터를 적용하는거랑 다른 결과를 띈다.
+        //따로 필터를 적용하는거랑 다른 결과를 띈다.
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
 
 
         http
