@@ -1,6 +1,8 @@
 package com.popcorn.popcorn.domain.dto;
 
 import com.popcorn.popcorn.domain.InterestType;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +14,12 @@ import java.util.List;
 @Getter
 public class SecondSignupDto {
 
+    private Long profileId;
+
+    @NotEmpty(message = "nickname is required")
     private String nickname;
 
+    @NotNull
     private List<InterestType> interests;
 
 }
