@@ -20,7 +20,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_YAML
+          envs: APPLICATION_YAML,S3_ACCESS_KEY,S3_SECRET_KEY,S3_REGION,S3_BUCKET_NAME
+
           script_stop:  true
           script: |
             cd /home/ubuntu/popcorn
