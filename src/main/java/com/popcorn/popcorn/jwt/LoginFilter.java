@@ -2,6 +2,7 @@ package com.popcorn.popcorn.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.popcorn.popcorn.common.api.ApiResponse;
+import com.popcorn.popcorn.domain.dto.CustomUserDetails;
 import com.popcorn.popcorn.util.RedisUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -62,8 +63,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String access = jwtUtil.createJwt("access", username, role, 1); //60분
-        String refresh = jwtUtil.createJwt("refresh", username, role, 24*7); //7일
+        // CustomUserDetails에서 userId 가져오기
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUserId();
+
+        String access = jwtUtil.createJwt("access", username, role, userId,1); //60분
+        String refresh = jwtUtil.createJwt("refresh", username, role, userId,24*7); //7일
 
         redisUtil.storeRefreshToken(username, refresh, 24*7);
         //addRefreshEntity(username, refresh, 24*7);

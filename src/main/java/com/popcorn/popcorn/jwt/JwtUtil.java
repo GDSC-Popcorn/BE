@@ -39,6 +39,15 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
     }
 
+    public Long getUserId(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", Long.class);
+    }
+
     public Boolean isExpired(String token){
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
@@ -62,7 +71,7 @@ public class JwtUtil {
         return formatter.format(new Date(expiry));
     }
 
-    public String createJwt(String category, String username, String role, long expirationHour){
+    public String createJwt(String category, String username, String role, Long userId, long expirationHour){
         ZonedDateTime issuedT = ZonedDateTime.now();
         ZonedDateTime expirateT = issuedT.plusHours(expirationHour);
         var issuedAtDate = Date.from(issuedT.toInstant());
@@ -72,6 +81,7 @@ public class JwtUtil {
                 .claim("category", category)
                 .claim("username", username)
                 .claim("role", role)
+                .claim("userId", userId)
                 .issuedAt(issuedAtDate)
                 .expiration(expirationDate)
                 .signWith(secretKey)
