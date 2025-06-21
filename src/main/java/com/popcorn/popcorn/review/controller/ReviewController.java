@@ -3,6 +3,7 @@ package com.popcorn.popcorn.review.controller;
 import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.domain.dto.CustomUserDetails;
 import com.popcorn.popcorn.domain.dto.PagedResponse;
+import com.popcorn.popcorn.review.dto.ReviewRatingResponse;
 import com.popcorn.popcorn.review.dto.ReviewRequest;
 import com.popcorn.popcorn.review.dto.ReviewResponse;
 import com.popcorn.popcorn.review.entity.Review;
@@ -29,7 +30,7 @@ public class ReviewController {
 
     //한 팝업에 대한 모든 리뷰 조회
     @GetMapping("/popups/{popupId}")
-    public ResponseEntity<ApiResponse<PagedResponse<ReviewResponse>>> getAllReview(
+    public ResponseEntity<ApiResponse<ReviewRatingResponse>> getAllReview(
             @PathVariable Long popupId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size =20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
