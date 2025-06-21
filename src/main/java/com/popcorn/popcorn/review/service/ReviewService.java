@@ -1,5 +1,6 @@
 package com.popcorn.popcorn.review.service;
 
+import com.popcorn.popcorn.common.api.ApiResponse;
 import com.popcorn.popcorn.common.exception.PopUpNotFoundExceptioin;
 import com.popcorn.popcorn.common.exception.ReviewNotFoundExceptioin;
 import com.popcorn.popcorn.common.exception.ReviewNotMatchException;
@@ -9,6 +10,7 @@ import com.popcorn.popcorn.domain.entity.PopupEntity;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.repository.PopupRepository;
 import com.popcorn.popcorn.repository.UserRepository;
+import com.popcorn.popcorn.review.dto.ReviewRatingResponse;
 import com.popcorn.popcorn.review.dto.ReviewRequest;
 import com.popcorn.popcorn.review.dto.ReviewResponse;
 import com.popcorn.popcorn.review.entity.Review;
@@ -21,14 +23,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -107,7 +107,7 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
-    public PagedResponse<ReviewResponse> getReviewsByPopup(Long popupId, Long userId, Pageable pageable) {
+    public ReviewRatingResponse getReviewsByPopup(Long popupId, Long userId, Pageable pageable) {
         PopupEntity popup = popupRepository.findById(popupId).
                 orElseThrow(() -> PopUpNotFoundExceptioin.EXCEPTION);
 
@@ -121,7 +121,29 @@ public class ReviewService {
         Set<Long> likedReviewIdSet = new HashSet<>(likedReviewIds);
 
         Page<ReviewResponse> res = reviews.map(r -> ReviewResponse.from(r, s3Service, likedReviewIdSet.contains(r.getId())));
-        return PagedResponse.from(res);
+        PagedResponse<ReviewResponse> reviewPagedResponse = PagedResponse.from(res);
+
+        //전체 리뷰 평점 계산
+        List<Review> allRev = reviewRepository.findAllByPopup(popup);
+
+        float averageRating = (float) allRev.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+
+        averageRating = Math.round(averageRating*10) /10.0f + 1;
+
+        Map<Integer, Integer> distribution = new HashMap<>();
+        for(int i=0;i<=4;i++) {
+            distribution.put(i, 0);
+        }
+
+        allRev.forEach(r -> {
+            int rating = r.getRating();
+            distribution.put(rating, distribution.getOrDefault(rating,0) + 1);
+        });
+
+        return ReviewRatingResponse.from(averageRating, distribution, reviewPagedResponse);
     }
 
     @Transactional

@@ -24,7 +24,7 @@ public class Review extends BaseEntity {
 
     private String contents;
 
-    private double rating;//평점
+    private int rating;//평점
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -60,7 +60,7 @@ public class Review extends BaseEntity {
         this.likeCount = Math.max(0, this.likeCount - 1);
     }
 
-    public void update(String content, double rating) {
+    public void update(String content, int rating) {
         if(!Objects.equals(this.contents, content)) {
             this.contents = content;
         }

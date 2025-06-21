@@ -11,12 +11,13 @@ import java.util.List;
 public record ReviewResponse(
         Long id,
         String contents,
-        Double rating,
+        int rating,
         List<String> imageUrls,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
         int likeCount,
         String nickname,
+        Long profileId,
         boolean liked
 ) {
     public static ReviewResponse from(Review review, S3Service s3Service, boolean liked) {
@@ -32,6 +33,7 @@ public record ReviewResponse(
                 review.getModifiedAt(),
                 review.getLikeCount(),
                 review.getUser().getNickname(),
+                review.getUser().getProfileId(),
                 liked
 
         );
