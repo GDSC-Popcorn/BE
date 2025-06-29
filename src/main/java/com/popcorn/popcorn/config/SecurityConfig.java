@@ -55,7 +55,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/auth/signup","/mailsend", "/mailauthChk", "/reissue", "/auth/**", "/api/v1/auth/**", "/images/**" ).permitAll()
+                        .requestMatchers("/login", "/", "/auth/signup","/mailsend", "/mailauthChk", "/reissue", "/auth/**", "/api/v1/auth/**", "/images/**",  "/actuator/**").permitAll()
                         .requestMatchers("/api/reviews/**", "/popups/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
