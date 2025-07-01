@@ -5,6 +5,7 @@ import lombok. *;
 
 import java.util.Date;
 
+@AllArgsConstructor
 @Builder
 @Getter
 public class HomeDto {
@@ -16,16 +17,6 @@ public class HomeDto {
     private String location;
     private InterestType interest;
 
-    @Builder
-    public HomeDto(Long id, String title, String popupImage, Date startedAt, Date endedAt, String location, InterestType interest) {
-        this.popupId = id;
-        this.title = title;
-        this.popupImage = popupImage;
-        this.startedAt = startedAt;
-        this.endedAt = endedAt;
-        this.location = location;
-        this.interest = interest;
-    }
 }
 
 

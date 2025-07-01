@@ -37,35 +37,38 @@ public class PopupService {
     public Map<String, Object> getAllPopups(int page) {
         int pageSize = 20;
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<PopupEntity> popupPage = popupRepository.findAllByOrderByEndedAtAsc(pageable);
+//        Page<PopupEntity> popupPage = popupRepository.findAllByOrderByEndedAtAsc(pageable);
+//        List<HomeDto> popups = popupPage.stream()
+//                .map(this::convertToHomeDTO)
+//                .collect(Collectors.toList());
 
-        List<HomeDto> popups = popupPage.stream()
-                .map(this::convertToHomeDTO)
-                .collect(Collectors.toList());
+        Page<HomeDto> popupPageProjected = popupRepository.findAllProjected(imageBaseUrl, pageable);
+
 
         Map<String,Object> response = new HashMap<>();
-        response.put("popups",popups);
+        response.put("popups",popupPageProjected.getContent());
         response.put("currentPage",page);
-        response.put("totalPages",popupPage.getTotalPages());
+        response.put("totalPages",popupPageProjected.getTotalPages());
 
         return response;
     }
 
     //랜덤 추천 팝업
     public List<HomeDto> getRecommendedPopups() {
-        List<PopupEntity> popups = popupRepository.findAll();
+        List<HomeDto> popups = popupRepository.findRandomPopuups(imageBaseUrl, PageRequest.of(0, 5));
 
-        if(popups.size() <= 5){ // 이미 5개이하면 그대로 반환
-            return popups.stream()
-                    .map(this::convertToHomeDTO)
-                    .collect(Collectors.toList());
-        }
-
-        Collections.shuffle(popups); //팝업 리스트 섞기
-        return popups.stream() //앞에서 5개 선택 후 반환
-                .limit(5)
-                .map(this::convertToHomeDTO)
-                .collect(Collectors.toList());
+        return popups;
+//        if(popups.size() <= 5){ // 이미 5개이하면 그대로 반환
+//            return popups.stream()
+//                    .map(this::convertToHomeDTO)
+//                    .collect(Collectors.toList());
+//        }
+//        //PageRequest
+//        Collections.shuffle(popups); //팝업 리스트 섞기
+//        return popups.stream() //앞에서 5개 선택 후 반환
+//                .limit(5)
+//                .map(this::convertToHomeDTO)
+//                .collect(Collectors.toList());
     }
 
     //찜 화면
