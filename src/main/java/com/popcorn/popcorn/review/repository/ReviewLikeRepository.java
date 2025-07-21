@@ -3,7 +3,9 @@ package com.popcorn.popcorn.review.repository;
 import com.popcorn.popcorn.domain.entity.UserEntity;
 import com.popcorn.popcorn.review.entity.Review;
 import com.popcorn.popcorn.review.entity.ReviewLike;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,8 @@ import java.util.Optional;
 @Repository
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
 
+    //비관적 락(x-lock)
+    //@Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<ReviewLike> findByUserAndReview(UserEntity user, Review review);
 
     /*

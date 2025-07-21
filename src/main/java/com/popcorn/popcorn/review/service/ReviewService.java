@@ -148,7 +148,7 @@ public class ReviewService {
 
     @Transactional
     public boolean toggleLike(Long reviewId, Long userId) {
-        Review review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findByIdWithLock(reviewId)
                 .orElseThrow(() -> ReviewNotFoundExceptioin.EXCEPTION);
 
         UserEntity user = userRepository.findById(userId)
