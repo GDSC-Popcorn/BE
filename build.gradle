@@ -55,6 +55,8 @@ dependencies {
 
 	//mysql
 	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
+	//h2
+	testImplementation 'com.h2database:h2'
 
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -66,6 +68,10 @@ dependencies {
 
 	//@ConfigurationProperties 사용하기 위해
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+	// 모니터링 prometheus + grafana
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 dependencyManagement {
