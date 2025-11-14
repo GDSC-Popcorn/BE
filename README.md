@@ -24,7 +24,7 @@
 
 # 목차
 ### [1. 프로젝트 소개](https://github.com/GDSC-Popcorn/Popcorn-BE/new/develop?filename=README.md#프로젝트-소개)
-### [2. 기술적 도전기](https://github.com/GDSC-Popcorn/Popcorn-BE/new/develop?filename=README.md#기술적-도전기)
+### [2. ✏️ 개발 과정 중 문제](https://github.com/GDSC-Popcorn/Popcorn-BE/new/develop?filename=README.md#개발 과정 중 문제)
 
 # 1. 프로젝트 소개
 팝업 스토어의 정보를 얻기 위해 SNS를 주로 이용합니다.  
