@@ -22,12 +22,26 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByPopup(PopupEntity popup, Pageable pageable);
 
-    @Query("select r from Review r " +
-            "join fetch r.user " +
-            "left join fetch r.reviewImages " +
-            "where r.popup = :popup"
-    )
-    Page<Review> findByPopupWithUserAndImages(@Param("popup") PopupEntity popup, Pageable pageable);
+    // ID만 페이징해서 가져오기
+    @Query("select r.id from Review r where r.popup = :popup order by r.createdAt desc")
+    Page<Long> findReviewIdsByPopup(@Param("popup") PopupEntity popup, Pageable pageable);
+
+    // ID 리스트로 실제 엔티티 + fetch join
+    @Query("""
+    select distinct r from Review r 
+    join fetch r.user 
+    left join fetch r.reviewImages 
+    where r.id in :ids 
+    order by r.createdAt desc
+""")
+    List<Review> findReviewsWithUserAndImagesByIds(@Param("ids") List<Long> ids);
+
+    //    @Query("select r from Review r " +
+//            "join fetch r.user " +
+//            "left join fetch r.reviewImages " +
+//            "where r.popup = :popup"
+//    )
+//    Page<Review> findByPopupWithUserAndImages(@Param("popup") PopupEntity popup, Pageable pageable);
 
     List<Review> findAllByPopup(PopupEntity popup);
 

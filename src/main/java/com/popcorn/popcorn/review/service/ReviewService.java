@@ -22,6 +22,7 @@ import com.popcorn.popcorn.service.S3Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -114,16 +115,27 @@ public class ReviewService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> UserNotFoundException.EXCEPTION);
 
-        Page<Review> reviews =  reviewRepository.findByPopupWithUserAndImages(popup, pageable);
+        // ID만 페이징 (LIMIT 적용)
+        Page<Long> reviewIdsPage = reviewRepository.findReviewIdsByPopup(popup, pageable);
+        List<Long> reviewIds = reviewIdsPage.getContent();
 
-        List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
+        // 해당 ID들만 fetch join으로 조회
+        List<Review> reviews = reviewRepository.findReviewsWithUserAndImagesByIds(reviewIds);
+
+        // 좋아요 배치 조회 (기존 그대로)
         List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByUserIdAndReviewIds(userId, reviewIds);
         Set<Long> likedReviewIdSet = new HashSet<>(likedReviewIds);
 
-        Page<ReviewResponse> res = reviews.map(r -> ReviewResponse.from(r, s3Service, likedReviewIdSet.contains(r.getId())));
+        // Page 객체 재구성 (content만 교체)
+        Page<Review> reviewPage = new PageImpl<>(reviews, pageable, reviewIdsPage.getTotalElements());
+
+        Page<ReviewResponse> res = reviewPage.map(r ->
+                ReviewResponse.from(r, s3Service, likedReviewIdSet.contains(r.getId()))
+        );
+
         PagedResponse<ReviewResponse> reviewPagedResponse = PagedResponse.from(res);
 
-        //전체 리뷰 평점 계산
+        //전체 리뷰 평점 계산 -> 모든 팝업 다 들고 오는거 추후 개선 필요
         List<Review> allRev = reviewRepository.findAllByPopup(popup);
 
         float averageRating = (float) allRev.stream()
