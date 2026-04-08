@@ -36,7 +36,7 @@
 또한 실시간 채팅을 이용해 팝업스토어의 현장 상황, 다양한 기타 정보들을 공유하여 사용자들이 소중한 시간을 지킬 수 있습니다!
 
 ## 기술 스택 
-<img width="1000" height="647" alt="스크린샷 2025-06-29 145959" src="https://github.com/user-attachments/assets/08013e71-20c0-4f31-a459-b54aa044961e" />
+<img width="1000" height="647" alt="팝콘_구조도" src="https://github.com/user-attachments/assets/ffb4ee67-9161-4357-ad87-012fc05207fe" />
 Java17, Spring Boot, Spring Security, Spring Data JPA, Mysql, Redis
 
 
